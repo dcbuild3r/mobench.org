@@ -1,9 +1,15 @@
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
+import { AppHead } from '@/components/app-head'
 
 export const Route = createRootRoute({
-  component: () => <Outlet />,
-  notFoundComponent: RootNotFound,
+ component: () => (
+  <>
+   <AppHead />
+   <Outlet />
+  </>
+ ),
+ notFoundComponent: RootNotFound,
 })
 
 function RootNotFound() {

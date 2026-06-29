@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
-    "build": "vite build",
+    "build": "vite build && node scripts/generate-route-html.mjs",
+    "og:generate": "python3 scripts/generate-og-images.py",
     "serve": "vite preview",
     "start": "vite"
   },

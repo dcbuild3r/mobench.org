@@ -1,0 +1,113 @@
+# mobench
+
+> mobench is a Rust mobile benchmarking toolkit for Android and iOS. It provides a Cargo-native CLI, SDK runtime, `#[benchmark]` macros, generated mobile runners, BrowserStack App Automate integration, stable reports, schemas, and native profiling artifacts.
+
+Use this file as a map for AI agents, coding assistants, and documentation readers. The canonical website is https://mobench.org and the canonical documentation site is https://docs.mobench.org.
+
+## Primary Links
+
+- Landing page: https://mobench.org
+- Documentation root: https://docs.mobench.org/docs
+- GitHub repository: https://github.com/worldcoin/mobile-bench-rs
+- DeepWiki by Cognition: https://deepwiki.com/worldcoin/mobile-bench-rs
+- DeepWiki overview: https://deepwiki.com/worldcoin/mobile-bench-rs/1-overview
+- Crate docs: https://docs.rs/mobench/latest/mobench/
+- SDK docs: https://docs.rs/mobench-sdk/latest/mobench_sdk/
+- Macro docs: https://docs.rs/mobench-macros/latest/mobench_macros/
+
+## What mobench is for
+
+mobench was built to benchmark intense Rust workloads in mobile environments that represent real World App users. Real users run flagship phones, mid-tier devices, low-end devices, and older 32-bit devices. mobench helps teams measure whether critical Rust workloads, including cryptography used by World ID and ProveKit, perform reliably across that device range.
+
+## Documentation Pages
+
+- Overview: https://docs.mobench.org/docs
+  High-level purpose, architecture, external AI documentation, and where to go next.
+- Quickstart: https://docs.mobench.org/quickstart
+  Install the CLI, register a benchmark, build mobile runners, and run locally or on BrowserStack.
+- Installation: https://docs.mobench.org/install
+  Rust, mobench, Android Studio, Android SDK and ADB, Xcode, iOS simulators, and BrowserStack credentials.
+- Concepts: https://docs.mobench.org/concepts
+  Benchmark definitions, generated runners, providers, report artifacts, schemas, and profiling outputs.
+- Writing benchmarks: https://docs.mobench.org/authoring
+  `#[benchmark]` functions, macro discovery, setup inputs, teardown, and benchmark authoring practices.
+- Setup and teardown: https://docs.mobench.org/setup-teardown
+  Untimed setup, measured iterations, teardown compatibility, and input lifetimes.
+- SDK integration: https://docs.mobench.org/sdk
+  `mobench-sdk`, runner backends, UniFFI, BoltFFI, native C ABI exports, and public runtime types.
+- Build artifacts: https://docs.mobench.org/build
+  Generated Android and iOS runner projects, runner backends, output paths, and verification commands.
+- Local devices: https://docs.mobench.org/local-devices
+  Connected Android devices, Android Studio emulators, ADB, Xcode simulators, and connected iOS devices.
+- BrowserStack CI: https://docs.mobench.org/browserstack
+  Hosted real-device runs, matrix resolution, PR reporting, artifacts, resource metrics, and CI contracts.
+- App Automate setup: https://docs.mobench.org/app-automate
+  BrowserStack App Automate API uploads, Android Espresso, iOS XCUITest, build execution, devices, pricing, and trial limits.
+- Profiling: https://docs.mobench.org/profiling
+  Native profiling, trace events, semantic phases, flamegraphs, profile diffs, and flamegraph viewer usage.
+- Outputs and reports: https://docs.mobench.org/reports
+  Summary JSON, Markdown reports, CSV rows, plots, BrowserStack artifacts, PR comments, and profiling bundles.
+- CLI man pages: https://docs.mobench.org/cli-reference
+  Exhaustive command reference, global options, subcommands, flags, expected inputs, outputs, and examples.
+- Schemas: https://docs.mobench.org/schemas
+  CI metadata, summary JSON, trace events, fixture payloads, and machine-readable contracts.
+- Examples explained: https://docs.mobench.org/examples
+  Basic benchmark and native C ABI / FFI examples, plus how fixture outputs map to reports.
+- Diagrams: https://docs.mobench.org/diagrams
+  Crate architecture, lifecycle, provider flow, BrowserStack CI, profiling artifacts, and SDK versus CLI responsibility.
+- Current behavior: https://docs.mobench.org/current-spec
+  Current behavior and API contract for release 0.1.42.
+- Codebase architecture: https://docs.mobench.org/codebase
+  Workspace layout, runtime layers, generated templates, integrations, stack, and ownership boundaries.
+- Testing strategy: https://docs.mobench.org/testing
+  Host tests, CLI smoke checks, fixture validation, CI contracts, BrowserStack smoke tests, and profiling checks.
+- Public API: https://docs.mobench.org/public-api
+  Published crates, feature flags, serialized contracts, errors, semver policy, MSRV, and release readiness.
+- Troubleshooting: https://docs.mobench.org/troubleshooting
+  Common setup, build, discovery, BrowserStack, profiling, schema, and result-quality issues.
+
+## Important External References
+
+- Rust install: https://www.rust-lang.org/tools/install
+- Android Studio: https://developer.android.com/studio
+- Android SDK platform tools: https://developer.android.com/tools/releases/platform-tools
+- Espresso: https://developer.android.com/training/testing/espresso
+- Xcode: https://developer.apple.com/xcode/
+- XCTest and XCUITest: https://developer.apple.com/documentation/xctest
+- BrowserStack: https://www.browserstack.com/
+- BrowserStack App Automate: https://www.browserstack.com/app-automate
+- BrowserStack App Automate API: https://www.browserstack.com/docs/app-automate/api-reference/introduction
+- ProveKit: https://provekit.org/
+- World ID: https://docs.world.org/world-id
+- World App: http://world.org/world-app
+
+## Common Commands
+
+```bash
+cargo install mobench
+cargo mobench init
+cargo mobench doctor
+cargo mobench check --target android
+cargo mobench build --target android --release
+cargo mobench run --local --function fibonacci_30 --iterations 100 --warmup 10
+cargo mobench ci run --target android --browserstack --output target/mobench/ci
+cargo mobench profile run --target android --function fibonacci_30 --output target/mobench/profile
+```
+
+## Output Artifacts
+
+- `summary.json`: normalized benchmark summary.
+- `summary.md`: human-readable run summary and PR comment source.
+- `results.csv`: tabular sample data.
+- `plots/`: optional rendered charts.
+- `trace-events.json`: native profiling trace-event output.
+- `profile-manifest.json`: profiling bundle index.
+- Flamegraph bundles: interactive profiling artifacts consumed by the flamegraph viewer.
+
+## Notes For Agents
+
+- Prefer the docs pages above for authored explanations.
+- Use DeepWiki when you need repository-indexed, source-linked context.
+- Use docs.rs for exact Rust API surfaces.
+- Use the CLI man pages page for exhaustive command flags and expected inputs or outputs.
+- Use the schemas page when generating or validating automation that consumes mobench artifacts.

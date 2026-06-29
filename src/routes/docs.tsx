@@ -104,6 +104,7 @@ const DOCSRS = {
   macros: 'https://docs.rs/mobench-macros/latest/mobench_macros/',
 }
 
+const LANDING_URL = 'https://mobench.org'
 const GITHUB_REPO = 'https://github.com/worldcoin/mobile-bench-rs'
 const DEEPWIKI_URL = 'https://deepwiki.com/worldcoin/mobile-bench-rs'
 const DEEPWIKI_OVERVIEW_URL = 'https://deepwiki.com/worldcoin/mobile-bench-rs/1-overview'
@@ -3444,11 +3445,13 @@ export function Docs({ initialPage = 'overview' }: { initialPage?: PageId }) {
       />
       <header className="sticky top-0 z-50 border-b border-[rgba(20,18,12,0.09)] bg-[var(--mb-header-bg)] backdrop-blur-[14px]">
         <div className="flex h-[60px] items-center justify-between gap-4 px-5 sm:px-7">
-          <Link to="/" className="group flex items-center gap-2.5 text-ink no-underline">
-            <span className="text-[18px] font-semibold tracking-[-0.035em] text-ink transition-colors group-hover:text-green">mobench</span>
-            <span className="rounded-md border border-[rgba(20,18,12,0.14)] bg-white px-2 py-1 font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted transition-colors group-hover:border-green/35 group-hover:text-green">docs</span>
-            <span className="rounded-md border border-[rgba(20,18,12,0.14)] bg-white px-2 py-1 font-mono text-[10.5px] tracking-[0.02em] text-muted transition-colors group-hover:border-green/35 group-hover:text-green">{MOBENCH_VERSION}</span>
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <a href={LANDING_URL} className="text-[18px] font-semibold tracking-[-0.035em] text-ink no-underline transition-colors hover:text-green">
+              mobench
+            </a>
+            <Link to="/docs" className="rounded-md border border-[rgba(20,18,12,0.14)] bg-white px-2 py-1 font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted no-underline transition-colors hover:border-green/35 hover:text-green">docs</Link>
+            <Link to="/docs" className="rounded-md border border-[rgba(20,18,12,0.14)] bg-white px-2 py-1 font-mono text-[10.5px] tracking-[0.02em] text-muted no-underline transition-colors hover:border-green/35 hover:text-green">{MOBENCH_VERSION}</Link>
+          </div>
 
           <button
             type="button"
