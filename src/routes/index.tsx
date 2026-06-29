@@ -130,7 +130,7 @@ const REQUIREMENTS = [
   'BrowserStack credentials for cloud runs',
 ]
 
-const SECTION = 'mx-auto max-w-[1280px] px-10'
+const SECTION = 'mx-auto max-w-[1280px] px-5 sm:px-7 lg:px-10'
 const EYEBROW = 'font-mono text-[11.5px] tracking-[0.1em] uppercase text-green mb-4'
 const H2 = 'text-[clamp(30px,3.6vw,46px)] leading-[1.04] tracking-[-0.04em] font-semibold m-0'
 
@@ -155,11 +155,11 @@ function Landing() {
   return (
     <div className="overflow-hidden bg-cream text-ink">
       <header className="sticky top-0 z-50 border-b border-[rgba(20,18,12,0.09)] bg-[rgba(244,239,221,0.78)] backdrop-blur-[14px]">
-        <div className="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between px-10">
+        <div className="mx-auto flex h-[60px] max-w-[1280px] items-center justify-between gap-4 px-5 sm:h-[68px] sm:px-7 lg:px-10">
           <a href="#top" className="no-underline">
             <Wordmark tag="0.1.41" />
           </a>
-          <nav className="hidden items-center gap-[30px] text-sm text-muted md:flex">
+          <nav className="hidden items-center gap-[30px] text-sm text-muted lg:flex">
             <a href="#features" className="no-underline text-inherit hover:text-ink">
               Features
             </a>
@@ -193,21 +193,22 @@ function Landing() {
         </div>
       </header>
 
-      <section id="top" className="relative mx-auto max-w-[1280px] px-10 pb-[88px] pt-24">
+      <section id="top" className="relative mx-auto max-w-[1280px] px-5 pb-16 pt-16 sm:px-7 sm:pb-[88px] sm:pt-24 lg:px-10">
         <div className="pointer-events-none absolute -right-[160px] -top-[120px] h-[620px] w-[620px] rounded-full border border-green/15" />
         <div className="pointer-events-none absolute right-[120px] top-10 h-[320px] w-[320px] rounded-full border border-green/10" />
-        <div className="flex flex-wrap items-center gap-16">
-          <div className="relative min-w-[320px] flex-1 basis-[480px]">
+        <div className="flex flex-col items-stretch gap-10 lg:flex-row lg:items-center lg:gap-16">
+          <div className="relative min-w-0 flex-1 basis-[480px]">
             <div className="mb-[26px] inline-flex items-center gap-[9px] rounded-[30px] border border-green/30 bg-green/5 px-[11px] py-1.5 font-mono text-[11.5px] uppercase tracking-[0.1em] text-green">
               <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" />
               CLI + SDK + macros
             </div>
-            <h1 className="m-0 mb-6 text-[clamp(42px,5.2vw,70px)] font-semibold leading-[0.98] tracking-[-0.045em]">
-              Benchmark Rust where it
-              <br />
-              actually runs, on <span className="text-green">mobile devices</span>.
+            <h1 className="m-0 mb-6 text-[clamp(32px,9vw,70px)] font-semibold leading-[1.03] tracking-[-0.045em] sm:leading-[0.98]">
+              Benchmark Rust
+              <br className="sm:hidden" /> where it
+              <br className="hidden sm:block" />{' '}
+              actually <br className="sm:hidden" />runs, on <span className="text-green">mobile devices</span>.
             </h1>
-            <p className="m-0 mb-[34px] max-w-[570px] text-[19px] leading-[1.5] text-muted">
+            <p className="m-0 mb-[34px] max-w-[570px] text-[16px] leading-[1.58] text-muted sm:text-[19px] sm:leading-[1.5]">
               mobench builds Android and iOS benchmark runners, executes Rust benchmarks locally or on
               BrowserStack devices, and writes CI-friendly reports from the same crate code you already ship.
             </p>
@@ -221,7 +222,7 @@ function Landing() {
                 </a>
               </Button>
             </div>
-            <div className="mt-11 flex flex-wrap gap-[26px] font-mono text-xs tracking-[0.02em] text-faint">
+            <div className="mt-9 flex flex-wrap gap-x-[18px] gap-y-2 font-mono text-[11.5px] tracking-[0.02em] text-faint sm:mt-11 sm:gap-[26px] sm:text-xs">
               <span>mobench CLI</span>
               <span className="text-[rgba(20,18,12,0.2)]">/</span>
               <span>mobench-sdk</span>
@@ -230,7 +231,7 @@ function Landing() {
             </div>
           </div>
 
-          <div className="relative min-w-[340px] flex-1 basis-[420px]">
+          <div className="relative min-w-0 flex-1 basis-[420px]">
             <div className="relative animate-floaty overflow-hidden rounded-[22px] border border-[rgba(20,18,12,0.10)] bg-white shadow-[0_40px_80px_-48px_rgba(20,18,12,0.55)]">
               <img
                 src="/assets/mobench-bench.png"
@@ -247,7 +248,7 @@ function Landing() {
       </section>
 
       <section className="border-y border-[rgba(20,18,12,0.08)] bg-white">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-[30px] px-10 py-[22px]">
+      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-[18px] px-5 py-[18px] sm:gap-[30px] sm:px-7 sm:py-[22px] lg:px-10">
           <span className="font-mono text-[11.5px] uppercase tracking-[0.08em] text-faint">
             Drop-in with tools you already use
           </span>
@@ -262,9 +263,9 @@ function Landing() {
         </div>
       </section>
 
-      <section id="quickstart" className={`${SECTION} py-[100px]`}>
-        <div className="flex flex-wrap items-center gap-16">
-          <div className="min-w-[320px] flex-1 basis-[420px]">
+      <section id="quickstart" className={`${SECTION} py-16 md:py-[100px]`}>
+        <div className="flex flex-col items-stretch gap-10 lg:flex-row lg:items-center lg:gap-16">
+          <div className="min-w-0 flex-1 basis-[420px]">
             <div className="mb-[18px] font-mono text-[11.5px] uppercase tracking-[0.1em] text-green">
               Quick start
             </div>
@@ -279,7 +280,7 @@ function Landing() {
               Read the full guide -&gt;
             </a>
           </div>
-          <div className="min-w-[340px] flex-1 basis-[460px]">
+          <div className="min-w-0 flex-1 basis-[460px]">
             <Terminal title="terminal" action={copied ? 'Copied' : 'Copy'} onAction={copyCmd}>
               <Line cmd="cargo install mobench" />
               <Line cmd='cargo mobench init --target android --output bench-config.toml' />
@@ -292,14 +293,14 @@ function Landing() {
       </section>
 
       <section id="features" className="border-y border-[rgba(20,18,12,0.08)] bg-white">
-        <div className={`${SECTION} py-[100px]`}>
+        <div className={`${SECTION} py-16 md:py-[100px]`}>
           <div className={EYEBROW}>Core features</div>
           <h2 className={`${H2} mb-14 max-w-[720px]`}>
             A mobile benchmark stack, not just another timing loop.
           </h2>
-          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.08)] bg-[rgba(20,18,12,0.08)] md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.08)] bg-[rgba(20,18,12,0.08)] md:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.n} className="bg-white px-[30px] pb-[38px] pt-[34px]">
+              <div key={f.n} className="bg-white px-5 pb-7 pt-7 sm:px-[30px] sm:pb-[38px] sm:pt-[34px]">
                 <div className="mb-[26px] flex items-center justify-between">
                   <div className="flex h-11 w-11 items-center justify-center rounded-[11px] border border-green/25 bg-green/5">
                     {f.icon}
@@ -315,7 +316,7 @@ function Landing() {
       </section>
 
       <section id="workflow" className="bg-bench text-ink">
-        <div className={`${SECTION} py-[104px]`}>
+        <div className={`${SECTION} py-16 md:py-[104px]`}>
           <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
             <div>
               <div className={EYEBROW}>Command surface</div>
@@ -331,7 +332,7 @@ function Landing() {
             </a>
           </div>
 
-          <div className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {CLI_COMMANDS.map(([cmd, desc]) => (
               <div key={cmd} className="rounded-xl border border-[rgba(20,18,12,0.10)] bg-white px-5 py-5">
                 <div className="font-mono text-[13px] text-green">cargo mobench {cmd}</div>
@@ -340,15 +341,15 @@ function Landing() {
             ))}
           </div>
 
-          <div className="rounded-2xl border border-[rgba(20,18,12,0.10)] bg-white px-8 pb-[34px] pt-[30px] shadow-[0_20px_50px_-34px_rgba(20,18,12,0.35)]">
+          <div className="rounded-2xl border border-[rgba(20,18,12,0.10)] bg-white px-5 pb-7 pt-6 shadow-[0_20px_50px_-34px_rgba(20,18,12,0.35)] sm:px-8 sm:pb-[34px] sm:pt-[30px]">
             <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
               <span className="text-[15px] font-medium">Example device comparison</span>
               <span className="font-mono text-[11.5px] text-faint">median duration · lower is better</span>
             </div>
             <div className="flex flex-col gap-5">
               {BENCH_ROWS.map((r) => (
-                <div key={r.name} className="flex items-center gap-[18px]">
-                  <span className="w-[130px] flex-none text-sm text-[#46402F]">{r.name}</span>
+              <div key={r.name} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-[18px]">
+                <span className="w-full flex-none text-sm text-[#46402F] sm:w-[130px]">{r.name}</span>
                   <div className="h-[30px] flex-1 rounded-md bg-[#E7EBDD]">
                     <div
                       className="flex h-full items-center justify-end rounded-md pr-3 font-mono text-[12.5px] text-white"
@@ -372,7 +373,7 @@ function Landing() {
         </div>
       </section>
 
-      <section id="sdk" className={`${SECTION} py-[100px]`}>
+      <section id="sdk" className={`${SECTION} py-16 md:py-[100px]`}>
         <div className={EYEBROW}>mobench-sdk</div>
         <h2 className={`${H2} mb-3.5 max-w-[760px]`}>
           Use the Rust API directly when the CLI is not enough.
@@ -382,7 +383,7 @@ function Landing() {
           codegen, and core types used by the CLI. Start with the full default feature set, or trim mobile
           binaries down with runner-only.
         </p>
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.08)] bg-[rgba(20,18,12,0.08)] md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.08)] bg-[rgba(20,18,12,0.08)] md:grid-cols-2 lg:grid-cols-3">
           {SDK_MODULES.map(([name, desc], index) => (
             <div key={name} className="bg-white px-7 pb-[34px] pt-[30px]">
               <div className="mb-4 font-mono text-xs text-[#C7C5BC]">{String(index + 1).padStart(2, '0')}</div>
@@ -394,8 +395,8 @@ function Landing() {
       </section>
 
       <section id="cloud" className="border-y border-[rgba(20,18,12,0.08)] bg-white">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-16 px-10 py-[100px]">
-          <div className="min-w-[320px] flex-1 basis-[420px]">
+        <div className="mx-auto flex max-w-[1280px] flex-col items-stretch gap-10 px-5 py-16 sm:px-7 md:py-[100px] lg:flex-row lg:items-center lg:gap-16 lg:px-10">
+          <div className="min-w-0 flex-1 basis-[420px]">
             <div className={EYEBROW}>Device cloud</div>
             <h2 className={`${H2} mb-[18px] max-w-[580px]`}>
               BrowserStack runs use the same CLI flow.
@@ -413,7 +414,7 @@ function Landing() {
               Explore BrowserStack -&gt;
             </a>
           </div>
-          <div className="min-w-[340px] flex-1 basis-[440px]">
+          <div className="min-w-0 flex-1 basis-[440px]">
             <Terminal title="browserstack">
               <Line cmd='export BROWSERSTACK_USERNAME="..."' />
               <Line cmd='export BROWSERSTACK_ACCESS_KEY="..."' />
@@ -425,7 +426,7 @@ function Landing() {
         </div>
       </section>
 
-      <section id="requirements" className={`${SECTION} py-[100px]`}>
+      <section id="requirements" className={`${SECTION} py-16 md:py-[100px]`}>
         <div className={EYEBROW}>Platform setup</div>
         <h2 className={`${H2} mb-3.5 max-w-[760px]`}>Know exactly what has to be installed.</h2>
         <p className="m-0 mb-10 max-w-[620px] text-[17px] leading-[1.55] text-muted">
@@ -445,7 +446,7 @@ function Landing() {
       </section>
 
       <section id="faq" className="border-t border-[rgba(20,18,12,0.08)] bg-white">
-        <div className="mx-auto max-w-[900px] px-10 py-[100px]">
+        <div className="mx-auto max-w-[900px] px-5 py-16 sm:px-7 md:py-[100px] lg:px-10">
           <div className="mb-4 text-center font-mono text-[11.5px] uppercase tracking-[0.1em] text-green">
             FAQ
           </div>
@@ -474,7 +475,7 @@ function Landing() {
       <section className="relative overflow-hidden bg-green text-white">
         <div className="absolute -right-[120px] -top-[180px] h-[540px] w-[540px] rounded-full border border-white/20" />
         <div className="absolute -bottom-[220px] -left-[120px] h-[480px] w-[480px] rounded-full border border-white/10" />
-        <div className="relative mx-auto max-w-[1280px] px-10 py-[104px] text-center">
+        <div className="relative mx-auto max-w-[1280px] px-5 py-16 text-center sm:px-7 md:py-[104px] lg:px-10">
           <h2 className="mx-auto mb-[22px] max-w-[760px] text-[clamp(34px,4.4vw,58px)] font-semibold leading-[1.02] tracking-[-0.045em]">
             Ship Rust performance with mobile evidence.
           </h2>
@@ -502,8 +503,8 @@ function Landing() {
       </section>
 
       <footer className="bg-footer text-[#A6A49B]">
-        <div className="mx-auto max-w-[1280px] px-10 pb-10 pt-14">
-          <div className="flex flex-wrap justify-between gap-10">
+      <div className="mx-auto max-w-[1280px] px-5 pb-10 pt-14 sm:px-7 lg:px-10">
+        <div className="flex flex-col justify-between gap-10 md:flex-row md:flex-wrap">
             <div className="max-w-[340px]">
               <div className="mb-4 flex items-center gap-[11px]">
                 <span className="text-[20px] font-semibold tracking-[-0.045em] text-[#F2F1EC]">mobench</span>
@@ -522,7 +523,7 @@ function Landing() {
                 Built by World
               </a>
             </div>
-            <div className="flex flex-wrap gap-16">
+        <div className="grid w-full grid-cols-1 gap-9 sm:grid-cols-3 md:w-auto md:gap-16">
               <FooterCol
                 title="Product"
                 links={[
@@ -572,7 +573,7 @@ function Terminal({
   children: ReactNode
 }) {
   return (
-    <div className="overflow-hidden rounded-[14px] bg-leaf shadow-[0_24px_50px_-30px_rgba(20,18,12,0.55)]">
+    <div className="min-w-0 overflow-hidden rounded-[14px] bg-leaf shadow-[0_24px_50px_-30px_rgba(20,18,12,0.55)]">
       <div className="flex items-center justify-between border-b border-[rgba(20,18,12,0.10)] px-4 py-3">
         <div className="flex gap-[7px]">
           <span className="h-[11px] w-[11px] rounded-full bg-[#BBC6A4]" />
@@ -591,7 +592,7 @@ function Terminal({
           <span className="w-[46px]" />
         )}
       </div>
-      <SyntaxHighlightedCode className="px-5 py-[22px] font-mono text-[13.5px] leading-[2] text-code">
+      <SyntaxHighlightedCode className="overflow-x-auto px-4 py-[18px] font-mono text-[12.5px] leading-[1.9] text-code sm:px-5 sm:py-[22px] sm:text-[13.5px] sm:leading-[2]">
         {children}
       </SyntaxHighlightedCode>
     </div>

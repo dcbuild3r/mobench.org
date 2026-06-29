@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Search } from 'lucide-react'
+import { Bot, Check, ChevronDown, Copy, ExternalLink, FileText, MessageCircle, Search } from 'lucide-react'
 import { SyntaxHighlightedCode } from '@/components/code-highlight'
 import { GithubIcon, WorldMark, GITHUB_URL, WORLD_URL } from '@/components/icons'
 import { cn } from '@/lib/utils'
@@ -211,16 +211,150 @@ const C = {
   kw: 'text-[#8A3DB0]',
 }
 
+const AI_LINKS = [
+  ['ChatGPT', 'https://chatgpt.com/?q='],
+  ['Claude', 'https://claude.ai/new?q='],
+  ['Gemini', 'https://gemini.google.com/app?prompt='],
+  ['Grok', 'https://grok.com/?q='],
+] as const
+
+function docsPageMarkdown(active: PageDef) {
+  const article = document.querySelector('[data-docs-article]')
+  const pageText = article?.textContent?.replace(/\n{3,}/g, '\n\n').trim() ?? active.label
+  const source = window.location.href
+
+  return [`# ${active.label === 'Overview' ? 'mobench documentation' : active.label}`, '', `Source: ${source}`, '', pageText].join('\n')
+}
+
+function aiPromptForPage(markdown: string) {
+  return [
+    'Use this mobench documentation page as context.',
+    'Explain the page, call out the important implementation details, and suggest the next concrete steps.',
+    '',
+    markdown,
+  ].join('\n')
+}
+
+async function copyText(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.left = '-9999px'
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  textarea.remove()
+}
+
+function DocsActions({ active }: { active: PageDef }) {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const currentMarkdown = () => docsPageMarkdown(active)
+
+  const copyPage = async () => {
+    await copyText(currentMarkdown())
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1500)
+  }
+
+  const viewMarkdown = () => {
+    const blob = new Blob([currentMarkdown()], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener,noreferrer')
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000)
+    setOpen(false)
+  }
+
+  const askAi = (baseUrl: string) => {
+    const prompt = aiPromptForPage(currentMarkdown())
+    window.open(`${baseUrl}${encodeURIComponent(prompt)}`, '_blank', 'noopener,noreferrer')
+    setOpen(false)
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((value) => !value)}
+        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-[rgba(20,18,12,0.16)] bg-white px-3 font-sans text-[13px] font-medium text-ink shadow-[0_8px_24px_-22px_rgba(20,18,12,0.5)]"
+        aria-expanded={open}
+      >
+        {copied ? <Check size={15} /> : <Copy size={15} />}
+        <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy page'}</span>
+        <span className="sm:hidden">{copied ? 'Done' : 'Copy'}</span>
+        <ChevronDown size={15} className={cn('transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(326px,calc(100vw-40px))] overflow-hidden rounded-xl border border-[rgba(20,18,12,0.14)] bg-[#15130f] p-1.5 text-white shadow-[0_24px_70px_-28px_rgba(20,18,12,0.7)]">
+          <button
+            onClick={copyPage}
+            className="flex w-full cursor-pointer items-start gap-3 rounded-lg px-3 py-3 text-left font-sans hover:bg-white/8"
+          >
+            <Copy size={17} className="mt-0.5 text-white/80" />
+            <span>
+              <span className="block text-[14px] font-medium text-white">Copy page</span>
+              <span className="mt-1 block text-[12.5px] leading-[1.35] text-white/50">Copy page as Markdown for LLMs</span>
+            </span>
+          </button>
+
+          <button
+            onClick={viewMarkdown}
+            className="flex w-full cursor-pointer items-start gap-3 rounded-lg px-3 py-3 text-left font-sans hover:bg-white/8"
+          >
+            <FileText size={17} className="mt-0.5 text-white/80" />
+            <span>
+              <span className="block text-[14px] font-medium text-white">View as Markdown</span>
+              <span className="mt-1 block text-[12.5px] leading-[1.35] text-white/50">Open this page as plain text</span>
+            </span>
+          </button>
+
+          <div className="border-t border-white/10 px-3 pb-2 pt-3">
+            <div className="mb-2 flex items-center gap-3">
+              <MessageCircle size={17} className="text-white/80" />
+              <div>
+                <div className="text-[14px] font-medium text-white">Ask AI about this page</div>
+                <div className="mt-1 text-[12.5px] leading-[1.35] text-white/50">Open this page as context in a new chat</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 pl-[29px]">
+              {AI_LINKS.map(([label, baseUrl]) => (
+                <button
+                  key={label}
+                  onClick={() => askAi(baseUrl)}
+                  className="inline-flex cursor-pointer items-center justify-between rounded-md bg-white/6 px-2.5 py-2 text-left text-[12.5px] font-medium text-white/85 hover:bg-white/12"
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <Bot size={13} />
+                    {label}
+                  </span>
+                  <ExternalLink size={12} className="text-white/45" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Mono({ children }: { children: ReactNode }) {
   return <span className="rounded-[5px] bg-[rgba(20,18,12,0.06)] px-1.5 py-px font-mono text-[14px]">{children}</span>
 }
 
 function H1({ children }: { children: ReactNode }) {
-  return <h1 className="m-0 mb-[18px] text-[50px] font-semibold leading-[1.03] tracking-[-0.045em]">{children}</h1>
+  return <h1 className="m-0 mb-[18px] text-[clamp(34px,10vw,50px)] font-semibold leading-[1.04] tracking-[-0.045em]">{children}</h1>
 }
 
 function Lead({ children }: { children: ReactNode }) {
-  return <p className="m-0 mb-11 text-[21px] leading-[1.6] text-muted">{children}</p>
+  return <p className="m-0 mb-9 text-[16.5px] leading-[1.68] text-muted sm:mb-11 sm:text-[21px] sm:leading-[1.6]">{children}</p>
 }
 
 function H2({ id, children, tight }: { id: string; children: ReactNode; tight?: boolean }) {
@@ -228,8 +362,8 @@ function H2({ id, children, tight }: { id: string; children: ReactNode; tight?: 
     <h2
       id={id}
       className={cn(
-        'text-[30px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]',
-        tight ? 'mb-[18px] mt-2' : 'mb-[18px] mt-[60px]',
+        'text-[25px] font-semibold tracking-[-0.03em] [scroll-margin-top:116px] sm:text-[30px] xl:[scroll-margin-top:90px]',
+        tight ? 'mb-[18px] mt-2' : 'mb-[18px] mt-11 sm:mt-[60px]',
       )}
     >
       {children}
@@ -238,12 +372,12 @@ function H2({ id, children, tight }: { id: string; children: ReactNode; tight?: 
 }
 
 function P({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cn('m-0 mb-3.5 text-[17.5px] leading-[1.78] text-ink-soft', className)}>{children}</p>
+  return <p className={cn('m-0 mb-3.5 text-[16px] leading-[1.72] text-ink-soft sm:text-[17.5px] sm:leading-[1.78]', className)}>{children}</p>
 }
 
 function Code({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <SyntaxHighlightedCode className={cn('overflow-x-auto rounded-xl bg-leaf px-5 py-[18px] font-mono text-[13.5px] leading-[1.9] text-code', className)}>
+    <SyntaxHighlightedCode className={cn('max-w-full overflow-x-auto rounded-xl bg-leaf px-4 py-4 font-mono text-[12.5px] leading-[1.8] text-code sm:px-5 sm:py-[18px] sm:text-[13.5px] sm:leading-[1.9]', className)}>
       {children}
     </SyntaxHighlightedCode>
   )
@@ -266,7 +400,7 @@ function Table({ rows }: { rows: [string, ReactNode][] }) {
   return (
     <div className="my-6 overflow-hidden rounded-xl border border-[rgba(20,18,12,0.10)] bg-white">
       {rows.map(([label, body]) => (
-        <div key={label} className="grid grid-cols-[180px_1fr] border-b border-[rgba(20,18,12,0.08)] last:border-b-0">
+        <div key={label} className="grid grid-cols-1 border-b border-[rgba(20,18,12,0.08)] last:border-b-0 sm:grid-cols-[180px_1fr]">
           <div className="bg-[#F6F1E1] px-4 py-3 font-mono text-[13px] text-green">{label}</div>
           <div className="px-4 py-3 text-[15px] leading-[1.6] text-ink-soft">{body}</div>
         </div>
@@ -276,7 +410,7 @@ function Table({ rows }: { rows: [string, ReactNode][] }) {
 }
 
 function Cards({ children }: { children: ReactNode }) {
-  return <div className="my-6 grid grid-cols-[repeat(auto-fill,minmax(238px,1fr))] gap-4">{children}</div>
+  return <div className="my-6 grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(238px,1fr))]">{children}</div>
 }
 
 function HubCard({ title, desc, onClick }: { title: string; desc: string; onClick: () => void }) {
@@ -324,7 +458,7 @@ export function Docs() {
   return (
     <div className="min-h-screen bg-cream text-ink">
       <header className="sticky top-0 z-50 border-b border-[rgba(20,18,12,0.09)] bg-[rgba(244,239,221,0.82)] backdrop-blur-[14px]">
-        <div className="flex h-[60px] items-center justify-between gap-6 px-7">
+        <div className="flex h-[60px] items-center justify-between gap-4 px-5 sm:px-7">
           {typeof window !== 'undefined' && window.location.hostname === 'docs.mobench.org' ? (
             <a href="https://mobench.org" className="flex items-center gap-2.5 no-underline text-ink">
               <span className="text-[19px] font-semibold tracking-[-0.045em]">mobench</span>
@@ -341,6 +475,7 @@ export function Docs() {
             <span className="flex-1 text-[13.5px]">Search docs</span>
             <span className="rounded-[5px] border border-[rgba(20,18,12,0.14)] px-1.5 py-px font-mono text-[11px]">⌘K</span>
           </div>
+          <DocsActions active={active} />
           <div className="flex items-center gap-4 text-[13.5px] text-muted">
             {typeof window !== 'undefined' && window.location.hostname === 'docs.mobench.org' ? (
               <a href="https://mobench.org" className="no-underline text-inherit">
@@ -355,7 +490,7 @@ export function Docs() {
               href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-[7px] rounded-lg border border-[rgba(20,18,12,0.16)] px-3 py-[7px] text-ink no-underline"
+              className="hidden items-center gap-[7px] rounded-lg border border-[rgba(20,18,12,0.16)] px-3 py-[7px] text-ink no-underline sm:flex"
             >
               <GithubIcon width={14} height={14} />
               GitHub
@@ -364,11 +499,11 @@ export function Docs() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1600px] items-start">
-        <aside className="mb-scroll sticky top-[60px] h-[calc(100vh-60px)] w-[282px] flex-none overflow-y-auto border-r border-[rgba(20,18,12,0.08)] py-10 pl-[34px] pr-[22px]">
+        <div className="mx-auto flex max-w-[1600px] flex-col items-stretch xl:flex-row xl:items-start">
+          <aside className="mb-scroll sticky top-[60px] z-30 w-full flex-none overflow-x-auto whitespace-nowrap border-b border-[rgba(20,18,12,0.08)] bg-cream px-5 py-3 sm:px-7 xl:h-[calc(100vh-60px)] xl:w-[282px] xl:overflow-y-auto xl:whitespace-normal xl:border-b-0 xl:border-r xl:py-10 xl:pl-[34px] xl:pr-[22px]">
           {groups.map((g) => (
-            <div key={g} className="mb-[26px]">
-              <div className="mb-3 pl-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-faintest">{g}</div>
+              <div key={g} className="contents xl:mb-[26px] xl:block">
+                <div className="hidden mb-3 pl-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-faintest xl:block">{g}</div>
               {PAGES.filter((p) => p.group === g).map((p) => {
                 const isActive = p.id === page
                 return (
@@ -376,9 +511,9 @@ export function Docs() {
                     key={p.id}
                     onClick={() => go(p.id)}
                     className={cn(
-                      'mb-[3px] block w-full cursor-pointer rounded-[9px] px-3.5 py-[9px] text-left text-[14.5px] leading-[1.35]',
+                        'mr-1 inline-block cursor-pointer whitespace-nowrap rounded-[9px] px-3.5 py-[9px] text-left text-[14px] leading-[1.35] xl:mb-[3px] xl:mr-0 xl:block xl:w-full xl:text-[14.5px]',
                       isActive
-                        ? 'bg-green/10 font-medium text-green shadow-[inset_2px_0_0_#3F7A2E]'
+                          ? 'bg-green/10 font-medium text-green xl:shadow-[inset_2px_0_0_#3F7A2E]'
                         : 'font-normal text-muted hover:text-ink',
                     )}
                   >
@@ -388,7 +523,7 @@ export function Docs() {
               })}
             </div>
           ))}
-          <div className="mt-[30px] border-t border-[rgba(20,18,12,0.08)] pt-[22px]">
+            <div className="mt-[30px] hidden border-t border-[rgba(20,18,12,0.08)] pt-[22px] xl:block">
             <a href={DOCS_URL} className="block px-3 py-1.5 text-[13px] font-medium text-green no-underline">
               docs.mobench.org
             </a>
@@ -401,8 +536,8 @@ export function Docs() {
           </div>
         </aside>
 
-        <main className="mb-scroll flex h-[calc(100vh-60px)] min-w-0 flex-1 justify-center overflow-y-auto px-12 pb-[130px] pt-14">
-          <article className="w-full max-w-[920px]">
+          <main className="mb-scroll flex min-h-[calc(100vh-112px)] w-full min-w-0 flex-1 justify-center px-5 pb-20 pt-9 sm:px-7 sm:pt-12 xl:h-[calc(100vh-60px)] xl:overflow-y-auto xl:px-12 xl:pb-[130px] xl:pt-14">
+            <article className="w-full max-w-[920px]" data-docs-article>
             {page !== 'home' && (
               <div className="mb-3.5 font-mono text-[11.5px] uppercase tracking-[0.08em] text-green">{active.group}</div>
             )}
@@ -422,7 +557,7 @@ export function Docs() {
             {page === 'packages' && <PackagesPage />}
             {page === 'troubleshooting' && <TroubleshootingPage />}
 
-            <div className="mt-16 flex justify-between gap-4 border-t border-[rgba(20,18,12,0.1)] pt-7">
+            <div className="mt-16 flex flex-col justify-between gap-4 border-t border-[rgba(20,18,12,0.1)] pt-7 sm:flex-row">
               {prev ? (
                 <button
                   onClick={() => go(prev.id)}
@@ -437,7 +572,7 @@ export function Docs() {
               {next ? (
                 <button
                   onClick={() => go(next.id)}
-                  className="flex-1 cursor-pointer rounded-xl border border-[rgba(20,18,12,0.12)] bg-white px-[18px] py-4 text-right font-sans"
+                  className="flex-1 cursor-pointer rounded-xl border border-[rgba(20,18,12,0.12)] bg-white px-[18px] py-4 text-left font-sans sm:text-right"
                 >
                   <span className="mb-[5px] block font-mono text-[11px] text-faint">NEXT</span>
                   <span className="text-[15px] font-medium text-ink">{next.label}</span>
@@ -478,11 +613,11 @@ function HomePage({
     <div>
       <button
         onClick={() => go('quick')}
-        className="mb-[34px] inline-flex cursor-pointer items-center gap-3 rounded-[40px] border border-green/20 bg-green/[0.07] py-2 pl-4 pr-2 font-sans transition-all hover:border-green/50 hover:bg-green/10"
+        className="mb-[34px] flex w-full cursor-pointer flex-wrap items-center gap-2 rounded-[18px] border border-green/20 bg-green/[0.07] px-3 py-2 text-left font-sans transition-all hover:border-green/50 hover:bg-green/10 sm:inline-flex sm:w-auto sm:gap-3 sm:rounded-[40px] sm:pl-4 sm:pr-2"
       >
         <span className="rounded-[30px] bg-green px-[9px] py-[3px] font-mono text-[10.5px] uppercase tracking-[0.06em] text-white">0.1.41</span>
-        <span className="text-[14.5px] text-ink-soft">Complete guide for mobench, mobench-sdk, and mobench-macros</span>
-        <span className="pr-2 text-[14px] font-medium text-green">Get started</span>
+        <span className="min-w-0 flex-1 text-[14px] leading-[1.35] text-ink-soft sm:flex-none sm:text-[14.5px]">Complete guide for mobench, mobench-sdk, and mobench-macros</span>
+        <span className="text-[14px] font-medium text-green sm:pr-2">Get started</span>
       </button>
 
       <H1>mobench documentation</H1>
@@ -491,7 +626,7 @@ function HomePage({
         generated mobile runners, and <Mono>#[benchmark]</Mono> macro.
       </Lead>
 
-      <div id="start" className="mb-11 flex flex-wrap gap-3 [scroll-margin-top:90px]">
+      <div id="start" className="mb-11 flex flex-col gap-3 [scroll-margin-top:116px] sm:flex-row sm:flex-wrap xl:[scroll-margin-top:90px]">
         <button onClick={() => go('install')} className="cursor-pointer rounded-[10px] bg-green px-5 py-3 font-sans text-[15px] font-medium text-white hover:bg-green-dark">
           Install mobench
         </button>
@@ -512,19 +647,19 @@ function HomePage({
       </Cards>
 
       <H2 id="path">Common path</H2>
-      <div className="overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.10)] shadow-[0_18px_44px_-34px_rgba(20,18,12,0.4)]">
-        <div className="flex gap-1 border-b border-[rgba(20,18,12,0.08)] bg-[#EFE9D5] p-[9px]">
+        <div className="overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.10)] shadow-[0_18px_44px_-34px_rgba(20,18,12,0.4)]">
+          <div className="mb-scroll flex gap-1 overflow-x-auto border-b border-[rgba(20,18,12,0.08)] bg-[#EFE9D5] p-[9px]">
           {qLabels.map((label, i) => (
             <button
               key={label}
               onClick={() => setQtab(i)}
-              className={cn('cursor-pointer rounded-lg px-4 py-2 font-sans text-[13.5px]', qtab === i ? 'bg-ink text-white' : 'text-muted hover:bg-white/60')}
+              className={cn('cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 font-sans text-[13.5px]', qtab === i ? 'bg-ink text-white' : 'text-muted hover:bg-white/60')}
             >
               {label}
             </button>
           ))}
         </div>
-        <div className="bg-leaf p-6">
+          <div className="bg-leaf p-3 sm:p-6">
           {qtab === 0 && (
             <Code>
               <Line cmd="cargo install mobench" />
