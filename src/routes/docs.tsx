@@ -267,7 +267,7 @@ const PAGES: PageDef[] = [
     group: 'Guides',
     description: 'Add mobench-sdk to a crate, configure runner backends, export native C ABI when needed, and use public runtime types.',
     icon: FileCode2,
-    toc: ['Dependencies', 'Runtime APIs', 'Native C ABI'],
+ toc: ['Dependencies', 'Runtime APIs', 'Choosing an FFI backend', 'Native C ABI'],
   },
   {
     id: 'build',
@@ -709,11 +709,23 @@ mobench-sdk = { version = "0.1.42", default-features = false, features = ["regis
         <><code>BenchSample</code> records wall-clock duration plus optional CPU and memory measurements.</>,
         <><code>BenchReport</code> contains samples, statistics helpers, semantic phases, and timeline spans.</>,
         <><code>Target</code>, <code>FfiBackend</code>, builders, and runner report types shape generated runner behavior.</>,
-      ],
-    },
-    {
-      title: 'Native C ABI',
-      body: [
+ ],
+ },
+ {
+ title: 'Choosing an FFI backend',
+ body: [
+ <>If you need generated bindings, choose between <InlineLink href={EXTERNAL_DOCS.boltffi}>BoltFFI</InlineLink> and <InlineLink href={EXTERNAL_DOCS.uniffi}>UniFFI</InlineLink> based on maturity versus overhead.</>,
+ <>The practical recommendation for performance-sensitive mobile benchmarks is still to write native FFI bindings for the benchmark boundary. AI agents make those bindings much easier to build, test, review, and maintain, and native bindings keep benchmark overhead explicit instead of hiding it inside a general-purpose binding layer.</>,
+ ],
+ bullets: [
+ <><strong>BoltFFI</strong>: fast, newer, and designed for smaller overhead than UniFFI, but not as mature yet.</>,
+ <><strong>UniFFI</strong>: more mature and battle-tested, but usually carries larger binding overhead.</>,
+ <><strong>Native FFI</strong>: recommended for serious benchmark paths because Android/iOS callers can use the narrow ABI the benchmark actually needs.</>,
+ ],
+ },
+ {
+ title: 'Native C ABI',
+ body: [
         <>The native C ABI lets generated runners call the benchmark crate directly without UniFFI bindings in the measured path.</>,
       ],
       code: {
@@ -1759,7 +1771,7 @@ pub fn benchmark_app_path() {
       title: 'Compatibility',
       bullets: [
         <>The serialized contracts are public API.</>,
-        <>The default FFI backend remains UniFFI; <code>native-c-abi</code> and <code>boltffi</code> are configurable generated-runner backends.</>,
+<>The default generated FFI backend remains UniFFI for maturity; <code>boltffi</code> and <code>native-c-abi</code> are configurable when you want lower overhead or a narrower native boundary.</>,
         <>Semver changes should protect benchmark authors and CI consumers from silent output drift.</>,
       ],
     },

@@ -138,6 +138,27 @@ const SECTION = 'mx-auto max-w-[1280px] px-5 sm:px-7 lg:px-10'
 const EYEBROW = 'font-mono text-[11.5px] tracking-[0.1em] uppercase text-green mb-4'
 const H2 = 'text-[clamp(30px,3.6vw,46px)] leading-[1.04] tracking-[-0.04em] font-semibold m-0'
 
+type ToolLogoName = 'android' | 'apple' | 'browserstack'
+
+const TOOL_LOGOS: Record<ToolLogoName, { src: string; alt: string }> = {
+  android: { src: '/assets/logo-android.svg', alt: 'Android' },
+  apple: { src: '/assets/logo-apple.svg', alt: 'Apple' },
+  browserstack: { src: '/assets/logo-browserstack.svg', alt: 'BrowserStack' },
+}
+
+function ToolLogo({ logo }: { logo: ToolLogoName }) {
+  const asset = TOOL_LOGOS[logo]
+  return <img src={asset.src} alt="" aria-hidden="true" className="h-[18px] w-[18px] flex-none object-contain" />
+}
+
+function ToolItem({ logo, children }: { logo: ToolLogoName; children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 whitespace-nowrap">
+      <ToolLogo logo={logo} />
+      <span>{children}</span>
+    </span>
+  )
+}
 function Root() {
   const isDocsHost = typeof window !== 'undefined' && window.location.hostname === 'docs.mobench.org'
   return isDocsHost ? <Docs /> : <Landing />
@@ -211,7 +232,11 @@ function Landing() {
               CLI + SDK + macros
             </div>
             <h1 className="m-0 mb-6 text-[clamp(32px,9vw,70px)] font-semibold leading-[1.03] tracking-[-0.045em] sm:leading-[0.98]">
-              Benchmark Rust
+              Benchmark{' '}
+              <span className="inline-flex items-baseline gap-[0.16em] whitespace-nowrap">
+                Rust
+                <img src="/assets/logo-ferris.svg" alt="Ferris" className="relative top-[0.1em] h-[1em] w-auto object-contain" />
+              </span>
               <br className="sm:hidden" /> where it
               <br className="hidden sm:block" />{' '}
               actually <br className="sm:hidden" />runs, on <span className="text-green">mobile devices</span>.
@@ -246,7 +271,7 @@ function Landing() {
                 alt="A large mobile phone on a park bench showing mobench"
                 className="block h-auto w-full"
               />
-              <div className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-[30px] border border-[rgba(20,18,12,0.1)] bg-[rgba(255,255,255,0.86)] px-[11px] py-1.5 font-mono text-[11px] tracking-[0.04em] text-ink backdrop-blur-[6px]">
+              <div className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-[30px] border border-[rgba(20,18,12,0.14)] bg-[rgba(255,255,255,0.92)] px-[11px] py-1.5 font-mono text-[11px] tracking-[0.04em] text-[#33271a] shadow-[0_10px_24px_-18px_rgba(20,18,12,0.8)] backdrop-blur-[6px]">
                 <span className="h-1.5 w-1.5 animate-blink rounded-full bg-[#1E8A3B]" />
                 BENCHED ON MOBILE
               </div>
@@ -261,11 +286,10 @@ function Landing() {
             Drop-in with tools you already use
           </span>
           <div className="flex flex-wrap items-center gap-9 text-[15px] font-medium text-muted">
-            <span>Cargo</span>
             <span>inventory</span>
-            <span>Android NDK</span>
-            <span>Xcode</span>
-            <span>BrowserStack</span>
+            <ToolItem logo="android">Android NDK</ToolItem>
+            <ToolItem logo="apple">Xcode</ToolItem>
+            <ToolItem logo="browserstack">BrowserStack</ToolItem>
             <span>JSON / CSV / Markdown</span>
           </div>
         </div>

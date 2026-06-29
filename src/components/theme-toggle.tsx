@@ -66,16 +66,15 @@ export function ThemeToggle({ className }: { className?: string }) {
         }
         applyTheme(nextTheme)
         setTheme(nextTheme)
-      }}
-      className={cn(
-        'inline-flex h-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[rgba(20,18,12,0.16)] bg-white px-2.5 font-sans text-[13px] font-medium text-ink transition-colors hover:border-green/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green/35 sm:px-3',
-        className,
-      )}
-      aria-label={`Switch to ${nextTheme} mode`}
-      title={`Switch to ${nextTheme} mode`}
-    >
-      <Icon size={15} />
-      <span className="hidden sm:inline">{nextTheme === 'dark' ? 'Dark' : 'Light'}</span>
-    </button>
+ }}
+ className={cn(
+ 'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[rgba(20,18,12,0.16)] bg-white text-ink transition-colors hover:border-green/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green/35',
+ className,
+ )}
+ aria-label={`Switch to ${nextTheme} mode`}
+ title={`Switch to ${nextTheme} mode`}
+ >
+ <Icon size={16} />
+ </button>
   )
 }
