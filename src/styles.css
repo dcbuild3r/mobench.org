@@ -44,6 +44,60 @@
   border-radius: 8px;
 }
 
+.syntax-codebox {
+  tab-size: 2;
+}
+
+.syntax-codebox .code-keyword {
+  color: #8a3db0;
+  font-weight: 500;
+}
+
+.syntax-codebox .code-type {
+  color: #1c7898;
+  font-weight: 500;
+}
+
+.syntax-codebox .code-function {
+  color: #2e7d1b;
+}
+
+.syntax-codebox .code-macro,
+.syntax-codebox .code-attribute {
+  color: #9a6411;
+}
+
+.syntax-codebox .code-string {
+  color: #4e7a1c;
+}
+
+.syntax-codebox .code-number {
+  color: #c2521d;
+}
+
+.syntax-codebox .code-comment {
+  color: #7f8b62;
+  font-style: italic;
+}
+
+.syntax-codebox .code-operator {
+  color: #6c7850;
+}
+
+.syntax-codebox .code-prompt,
+.syntax-codebox .code-key {
+  color: #8a9163;
+}
+
+.syntax-codebox .code-command {
+  color: #2e7d1b;
+  font-weight: 500;
+}
+
+.syntax-codebox .code-flag {
+  color: #9a6411;
+}
+
 @keyframes blink {
   0%,
   60% {

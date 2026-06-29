@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { SyntaxHighlightedCode } from '@/components/code-highlight'
+import { Docs } from './docs'
 import {
   Accordion,
   AccordionContent,
@@ -17,65 +19,56 @@ import {
 } from '@/components/icons'
 
 export const Route = createFileRoute('/')({
-  component: Landing,
+  component: Root,
 })
+
+const DOCSRS = {
+  mobench: 'https://docs.rs/mobench/latest/mobench/',
+  sdk: 'https://docs.rs/mobench-sdk/latest/mobench_sdk/',
+  macros: 'https://docs.rs/mobench-macros/latest/mobench_macros/',
+}
+
+const DOCS_URL = 'https://docs.mobench.org'
 
 const FAQS = [
   {
     q: 'What exactly is mobench?',
-    a: 'mobench (mobile-bench-rs) is an open-source Rust harness that runs your benchmarks on real iOS and Android phones, then reports wall-clock time, peak memory, and energy per device. It is built and maintained by World and ships as a single CLI installable from crates.io.',
+    a: 'mobench is the Rust CLI and SDK ecosystem for building, running, reporting, and profiling mobile benchmarks. The CLI orchestrates Android and iOS builds, local runs, BrowserStack runs, CI summaries, and report output.',
   },
   {
-    q: 'Do I need a Mac to benchmark on iOS?',
-    a: 'For on-device iOS runs you need a host with Xcode command-line tools, which currently means macOS. Android runs work from macOS, Linux, or Windows via adb. You can also point mobench at a remote device farm and run everything from CI.',
+    q: 'Which crates make up the ecosystem?',
+    a: 'mobench is the CLI. mobench-sdk provides the timing harness, benchmark registry, builders, code generation, types, and runner APIs. mobench-macros provides the #[benchmark] attribute, re-exported by the SDK for normal use.',
   },
   {
-    q: 'How does it measure energy and memory?',
-    a: 'mobench reads the platform’s own instrumentation, powermetrics-style energy counters and resident-set sampling on each OS, and aggregates them alongside timing. Cold and warm runs are tracked separately so thermal throttling and JIT warm-up do not get averaged away.',
+    q: 'Do I need to write a mobile app?',
+    a: 'No. You annotate Rust functions, configure your crate for mobile FFI outputs, and let mobench generate the mobile runner projects under target/mobench. Android builds produce APK output; iOS builds produce xcframework and IPA artifacts.',
   },
   {
-    q: 'Can it run in CI?',
-    a: 'Yes. mobench emits reproducible JSON and CSV reports and a compact regression diff designed for pull-request comments. Wire it into GitHub Actions against a self-hosted runner with attached devices, or against a hosted device farm.',
+    q: 'Can it run without a device farm?',
+    a: 'Yes. You can run locally with --local-only while developing, run on attached Android or iOS devices when your host is configured, or send Android runs to BrowserStack App Automate with device names from your run matrix.',
   },
   {
-    q: 'Does it work with Criterion?',
-    a: 'It does. Annotate existing Criterion benches and mobench will cross-compile, deploy, and run them on-device, collecting the same statistics you already rely on plus the mobile-specific metrics. Custom harnesses are supported through a small attribute macro.',
+    q: 'What should benchmark functions look like?',
+    a: 'Simple #[benchmark] functions are public, take no parameters, return (), and should black_box computed results. Benchmarks with setup can use #[benchmark(setup = setup_fn)] and receive a reference to the setup value, while setup time is excluded.',
   },
 ]
 
 const FEATURES = [
   {
     n: '01',
-    title: 'Real devices, not emulators',
-    body: 'Runs your Criterion and custom benches on physical iOS & Android phones over USB or a device farm. The same silicon, thermal limits, and schedulers your users have.',
+    title: 'CLI orchestration',
+    body: 'Initialize a run config, build Android or iOS artifacts, execute locally or on BrowserStack, validate CI contracts, fetch results, and render reports from one Cargo-native command surface.',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3F7A2E" strokeWidth="1.6">
-        <rect x="6" y="2" width="12" height="20" rx="3" />
-        <line x1="10" y1="18.5" x2="14" y2="18.5" />
+        <path d="M4 7h16M7 12h7M7 17h10" />
+        <rect x="3" y="4" width="18" height="16" rx="3" />
       </svg>
     ),
   },
   {
     n: '02',
-    title: 'Metrics that matter on mobile',
-    body: 'Wall-clock time, peak resident memory, energy and thermal headroom, plus cold vs. warm runs, captured per device and per commit, not averaged into mush.',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3F7A2E" strokeWidth="1.6">
-        <path d="M3 17l5-6 4 4 5-8 4 5" />
-        <line x1="3" y1="21" x2="21" y2="21" />
-      </svg>
-    ),
-  },
-  {
-    n: '03',
-    title: 'Rust-native workflow',
-    body: (
-      <>
-        Drop in with Cargo, annotate your benches, and run{' '}
-        <span className="font-mono text-[13px]">mobench run</span>. Get reproducible JSON/CSV
-        reports and clean regression diffs straight in CI.
-      </>
-    ),
+    title: 'SDK runtime and builders',
+    body: 'Use the SDK timing harness, benchmark registry, runner APIs, Android/iOS builders, codegen templates, and shared result types directly when you need programmatic control.',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3F7A2E" strokeWidth="1.6">
         <path d="M4 7l8-4 8 4-8 4-8-4z" />
@@ -84,49 +77,67 @@ const FEATURES = [
       </svg>
     ),
   },
+  {
+    n: '03',
+    title: 'Macro-driven discovery',
+    body: (
+      <>
+        Mark functions with <span className="font-mono text-[13px]">#[benchmark]</span>. The macro
+        preserves the function, registers it through inventory, captures its fully-qualified name, and
+        supports untimed setup.
+      </>
+    ),
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3F7A2E" strokeWidth="1.6">
+        <path d="M7 8l-4 4 4 4" />
+        <path d="M17 8l4 4-4 4" />
+        <path d="M14 4l-4 16" />
+      </svg>
+    ),
+  },
+]
+
+const CLI_COMMANDS = [
+  ['init', 'Create a benchmark project config'],
+  ['build', 'Build Android APKs or iOS artifacts'],
+  ['run', 'Execute locally or on BrowserStack devices'],
+  ['ci run', 'Write summary.json, summary.md, and results.csv'],
+  ['doctor', 'Validate local and CI prerequisites'],
+  ['report', 'Render markdown and sticky PR comments'],
+]
+
+const SDK_MODULES = [
+  ['timing', 'Core timing infrastructure, always available'],
+  ['registry', 'Runtime discovery for #[benchmark] functions'],
+  ['runner', 'BenchmarkBuilder, BenchSpec, and run_benchmark'],
+  ['builders', 'AndroidBuilder and IosBuilder automation'],
+  ['codegen', 'Mobile project and runner template generation'],
+  ['types', 'Common config, result, report, and error types'],
 ]
 
 const BENCH_ROWS = [
-  { name: 'iPhone 15 Pro', value: 312, width: '44.6%', warn: false },
-  { name: 'Galaxy S24', value: 356, width: '50.9%', warn: false },
-  { name: 'Pixel 8', value: 408, width: '58.3%', warn: false },
-  { name: 'Pixel 6a', value: 690, width: '98.6%', warn: true },
+  { name: 'Galaxy S24', label: '312 ms', width: '45%', warn: false },
+  { name: 'Pixel 8', label: '408 ms', width: '59%', warn: false },
+  { name: 'Pixel 6a', label: '690 ms', width: '100%', warn: true },
 ]
 
-const DEVICES = [
-  'iPhone 15 Pro',
-  'iPhone 14',
-  'iPhone SE',
-  'Pixel 8 / 8 Pro',
-  'Pixel 6a',
-  'Galaxy S24',
-  'Galaxy A54',
-  'OnePlus 12',
-]
-
-const BINDINGS = [
-  {
-    n: '01',
-    title: 'UniFFI',
-    body: "Generate idiomatic Swift and Kotlin wrappers straight from the SDK's interface definition. The recommended path for most mobile teams.",
-  },
-  {
-    n: '02',
-    title: 'Bolt FFI',
-    body: "Prefer Bolt's binding workflow? mobench-sdk ships a Bolt-compatible surface for projects already standardized on it.",
-  },
-  {
-    n: '03',
-    title: 'Native FFI',
-    body: 'Need full control? Link the C header directly and hand-write your own native FFI bindings against the stable ABI.',
-  },
+const REQUIREMENTS = [
+  'Android NDK + ANDROID_NDK_HOME',
+  'cargo-ndk for Android builds',
+  'Xcode command-line tools for iOS',
+  'Rust mobile targets',
+  'inventory for benchmark registration',
+  'BrowserStack credentials for cloud runs',
 ]
 
 const SECTION = 'mx-auto max-w-[1280px] px-10'
-const EYEBROW =
-  'font-mono text-[11.5px] tracking-[0.1em] uppercase text-green mb-4'
-const H2 =
-  'text-[clamp(30px,3.6vw,46px)] leading-[1.04] tracking-[-0.04em] font-semibold m-0'
+const EYEBROW = 'font-mono text-[11.5px] tracking-[0.1em] uppercase text-green mb-4'
+const H2 = 'text-[clamp(30px,3.6vw,46px)] leading-[1.04] tracking-[-0.04em] font-semibold m-0'
+
+function Root() {
+  const isDocsHost = typeof window !== 'undefined' && window.location.hostname === 'docs.mobench.org'
+  return isDocsHost ? <Docs /> : <Landing />
+}
 
 function Landing() {
   const [copied, setCopied] = useState(false)
@@ -143,18 +154,27 @@ function Landing() {
 
   return (
     <div className="overflow-hidden bg-cream text-ink">
-      {/* NAV */}
       <header className="sticky top-0 z-50 border-b border-[rgba(20,18,12,0.09)] bg-[rgba(244,239,221,0.78)] backdrop-blur-[14px]">
         <div className="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between px-10">
           <a href="#top" className="no-underline">
-            <Wordmark tag="v0.3" />
+            <Wordmark tag="0.1.41" />
           </a>
           <nav className="hidden items-center gap-[30px] text-sm text-muted md:flex">
-            <a href="#features" className="no-underline text-inherit hover:text-ink">Features</a>
-            <a href="#benchmarks" className="no-underline text-inherit hover:text-ink">Benchmarks</a>
-            <a href="#devices" className="no-underline text-inherit hover:text-ink">Devices</a>
-            <a href="#faq" className="no-underline text-inherit hover:text-ink">FAQ</a>
-            <Link to="/docs" className="no-underline text-inherit hover:text-ink">Docs</Link>
+            <a href="#features" className="no-underline text-inherit hover:text-ink">
+              Features
+            </a>
+            <a href="#sdk" className="no-underline text-inherit hover:text-ink">
+              SDK
+            </a>
+            <a href="#workflow" className="no-underline text-inherit hover:text-ink">
+              Workflow
+            </a>
+            <a href="#faq" className="no-underline text-inherit hover:text-ink">
+              FAQ
+            </a>
+            <a href={DOCS_URL} className="no-underline text-inherit hover:text-ink">
+              Docs
+            </a>
           </nav>
           <div className="flex items-center gap-3">
             <a
@@ -165,156 +185,117 @@ function Landing() {
             >
               <GithubIcon />
               <span>GitHub</span>
-              <span className="font-mono text-faint">1.2k</span>
             </a>
             <Button asChild size="sm" className="px-4 py-[9px] text-[13px]">
-              <Link to="/docs">Read the docs</Link>
+              <a href={DOCS_URL}>Read docs</a>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* HERO */}
       <section id="top" className="relative mx-auto max-w-[1280px] px-10 pb-[88px] pt-24">
         <div className="pointer-events-none absolute -right-[160px] -top-[120px] h-[620px] w-[620px] rounded-full border border-green/15" />
         <div className="pointer-events-none absolute right-[120px] top-10 h-[320px] w-[320px] rounded-full border border-green/10" />
-
         <div className="flex flex-wrap items-center gap-16">
           <div className="relative min-w-[320px] flex-1 basis-[480px]">
             <div className="mb-[26px] inline-flex items-center gap-[9px] rounded-[30px] border border-green/30 bg-green/5 px-[11px] py-1.5 font-mono text-[11.5px] uppercase tracking-[0.1em] text-green">
               <span className="h-1.5 w-1.5 animate-blink rounded-full bg-green" />
-              Built by World · Open source
+              CLI + SDK + macros
             </div>
             <h1 className="m-0 mb-6 text-[clamp(42px,5.2vw,70px)] font-semibold leading-[0.98] tracking-[-0.045em]">
-              Benchmark Rust where it<br />actually runs, on{' '}
-              <span className="text-green">real phones</span>.
+              Benchmark Rust where it
+              <br />
+              actually runs, on <span className="text-green">mobile devices</span>.
             </h1>
-            <p className="m-0 mb-[34px] max-w-[540px] text-[19px] leading-[1.5] text-muted">
-              mobench runs your Rust benchmarks on physical iOS &amp; Android hardware and reports
-              wall&#8209;clock time, peak memory, and energy, so you optimize for the device your
-              users hold, not your CI runner.
+            <p className="m-0 mb-[34px] max-w-[570px] text-[19px] leading-[1.5] text-muted">
+              mobench builds Android and iOS benchmark runners, executes Rust benchmarks locally or on
+              BrowserStack devices, and writes CI-friendly reports from the same crate code you already ship.
             </p>
             <div className="flex flex-wrap items-center gap-[13px]">
               <Button asChild variant="ink" className="text-[15px]">
-                <a href={GITHUB_URL} target="_blank" rel="noreferrer">
-                  View on GitHub <span className="font-mono opacity-55">{'{ }'}</span>
-                </a>
+                <a href={DOCS_URL}>Start with the docs</a>
               </Button>
               <Button asChild variant="outline" className="text-[15px]">
-                <a href="#quickstart">Quickstart &rarr;</a>
+                <a href={DOCSRS.mobench} target="_blank" rel="noreferrer">
+                  API reference
+                </a>
               </Button>
             </div>
             <div className="mt-11 flex flex-wrap gap-[26px] font-mono text-xs tracking-[0.02em] text-faint">
-              <span>RUST&nbsp;NATIVE</span>
+              <span>mobench CLI</span>
               <span className="text-[rgba(20,18,12,0.2)]">/</span>
-              <span>iOS&nbsp;16+&nbsp;·&nbsp;ANDROID&nbsp;12+</span>
+              <span>mobench-sdk</span>
               <span className="text-[rgba(20,18,12,0.2)]">/</span>
-              <span>MIT&nbsp;LICENSE</span>
+              <span>#[benchmark]</span>
             </div>
           </div>
 
           <div className="relative min-w-[340px] flex-1 basis-[420px]">
-            <div className="relative animate-floaty overflow-hidden rounded-[22px] border border-[rgba(20,18,12,0.10)] bg-white shadow-[0_30px_70px_-30px_rgba(63,122,46,0.30),0_6px_18px_-8px_rgba(20,18,12,0.14)]">
+            <div className="relative animate-floaty overflow-hidden rounded-[22px] border border-[rgba(20,18,12,0.10)] bg-white shadow-[0_40px_80px_-48px_rgba(20,18,12,0.55)]">
               <img
                 src="/assets/mobench-bench.png"
-                alt="A giant Nokia 3310 reading MOBENCH propped on a park bench"
+                alt="A large mobile phone on a park bench showing mobench"
                 className="block h-auto w-full"
               />
               <div className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-[30px] border border-[rgba(20,18,12,0.1)] bg-[rgba(255,255,255,0.86)] px-[11px] py-1.5 font-mono text-[11px] tracking-[0.04em] text-ink backdrop-blur-[6px]">
                 <span className="h-1.5 w-1.5 animate-blink rounded-full bg-[#1E8A3B]" />
-                BENCHED · ON A REAL BENCH
+                BENCHED ON MOBILE
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* TRUST STRIP */}
       <section className="border-y border-[rgba(20,18,12,0.08)] bg-white">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-[30px] px-10 py-[22px]">
           <span className="font-mono text-[11.5px] uppercase tracking-[0.08em] text-faint">
-            Drop-in with the tools you already use
+            Drop-in with tools you already use
           </span>
           <div className="flex flex-wrap items-center gap-9 text-[15px] font-medium text-muted">
             <span>Cargo</span>
-            <span>Criterion</span>
-            <span>Xcode&nbsp;/&nbsp;adb</span>
-            <span>GitHub&nbsp;Actions</span>
-            <span>JSON&nbsp;/&nbsp;CSV</span>
+            <span>inventory</span>
+            <span>Android NDK</span>
+            <span>Xcode</span>
+            <span>BrowserStack</span>
+            <span>JSON / CSV / Markdown</span>
           </div>
         </div>
       </section>
 
-      {/* QUICKSTART */}
       <section id="quickstart" className={`${SECTION} py-[100px]`}>
         <div className="flex flex-wrap items-center gap-16">
           <div className="min-w-[320px] flex-1 basis-[420px]">
             <div className="mb-[18px] font-mono text-[11.5px] uppercase tracking-[0.1em] text-green">
-              Get started in 60 seconds
+              Quick start
             </div>
             <h2 className="m-0 mb-[18px] text-[clamp(30px,3.6vw,46px)] font-semibold leading-[1.04] tracking-[-0.04em]">
-              Install, plug in a device, run.
+              Install the CLI, annotate a function, run a device matrix.
             </h2>
-            <p className="m-0 mb-[26px] max-w-[460px] text-[17px] leading-[1.55] text-muted">
-              Install the CLI from crates.io, connect a phone over USB (or point at a device farm),
-              and mobench discovers it, runs your benches, and writes a reproducible report.
+            <p className="m-0 mb-[26px] max-w-[500px] text-[17px] leading-[1.55] text-muted">
+              Add the SDK and inventory to your crate, expose mobile FFI outputs, mark benchmark functions,
+              then let cargo mobench build and run the generated mobile apps.
             </p>
-            <Link
-              to="/docs"
-              className="inline-flex items-center gap-2 text-[15px] font-medium text-green no-underline"
-            >
-              Read the full guide &rarr;
-            </Link>
+            <a href={DOCS_URL} className="inline-flex items-center gap-2 text-[15px] font-medium text-green no-underline">
+              Read the full guide -&gt;
+            </a>
           </div>
           <div className="min-w-[340px] flex-1 basis-[460px]">
-            <div className="overflow-hidden rounded-[14px] bg-leaf shadow-[0_24px_50px_-30px_rgba(20,18,12,0.55)]">
-              <div className="flex items-center justify-between border-b border-[rgba(20,18,12,0.10)] px-4 py-3">
-                <div className="flex gap-[7px]">
-                  <span className="h-[11px] w-[11px] rounded-full bg-[#BBC6A4]" />
-                  <span className="h-[11px] w-[11px] rounded-full bg-[#BBC6A4]" />
-                  <span className="h-[11px] w-[11px] rounded-full bg-[#BBC6A4]" />
-                </div>
-                <span className="font-mono text-[11px] text-[#8A9163]">terminal</span>
-                <button
-                  onClick={copyCmd}
-                  className="cursor-pointer rounded-md border border-[rgba(20,18,12,0.14)] bg-[rgba(20,18,12,0.05)] px-2.5 py-1 font-mono text-[11px] text-[#46502F]"
-                >
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-              </div>
-              <div className="px-5 py-[22px] font-mono text-[13.5px] leading-[2] text-code">
-                <div>
-                  <span className="text-[#8A9163]">$</span>{' '}
-                  <span className="text-[#2E7D1B]">cargo</span> install mobench
-                </div>
-                <div>
-                  <span className="text-[#8A9163]">$</span>{' '}
-                  <span className="text-[#2E7D1B]">mobench</span> run{' '}
-                  <span className="text-[#4E7A1C]">--bench</span> prove{' '}
-                  <span className="text-[#4E7A1C]">--device</span> pixel-8
-                </div>
-                <div className="text-[#8A9163]">&nbsp;</div>
-                <div className="text-[#6C7850]">  detected 1 device · android 14 · arm64</div>
-                <div className="text-[#6C7850]">
-                  {'  '}running prove … <span className="text-[#1E8A3B]">done</span> in 408 ms
-                </div>
-                <div className="text-[#6C7850]">  peak rss 118.9 MiB · energy 0.31 J</div>
-                <div>
-                  <span className="text-[#8A9163]">$</span>{' '}
-                  <span className="text-[rgba(20,18,12,0.5)]">▍</span>
-                </div>
-              </div>
-            </div>
+            <Terminal title="terminal" action={copied ? 'Copied' : 'Copy'} onAction={copyCmd}>
+              <Line cmd="cargo install mobench" />
+              <Line cmd='cargo mobench init --target android --output bench-config.toml' />
+              <Line cmd="cargo mobench build --target android" />
+              <Line cmd='cargo mobench run --target android --function my_crate::hash_benchmark --iterations 100 --warmup 10 --devices "Google Pixel 7-13.0" --release' />
+              <div className="text-[#6C7850]">summary.json + summary.md + results.csv ready</div>
+            </Terminal>
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
       <section id="features" className="border-y border-[rgba(20,18,12,0.08)] bg-white">
         <div className={`${SECTION} py-[100px]`}>
           <div className={EYEBROW}>Core features</div>
           <h2 className={`${H2} mb-14 max-w-[720px]`}>
-            Numbers you can trust, from the hardware that matters.
+            A mobile benchmark stack, not just another timing loop.
           </h2>
           <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.08)] bg-[rgba(20,18,12,0.08)] md:grid-cols-3">
             {FEATURES.map((f) => (
@@ -333,46 +314,36 @@ function Landing() {
         </div>
       </section>
 
-      {/* BENCHMARKS */}
-      <section id="benchmarks" className="bg-bench text-ink">
+      <section id="workflow" className="bg-bench text-ink">
         <div className={`${SECTION} py-[104px]`}>
           <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
             <div>
-              <div className={EYEBROW}>Benchmarks</div>
-              <h2 className={`${H2} max-w-[640px]`}>
-                See exactly how your code behaves across the device landscape.
+              <div className={EYEBROW}>Command surface</div>
+              <h2 className={`${H2} max-w-[660px]`}>
+                From project init to pull-request report, every step is scriptable.
               </h2>
             </div>
-            <Link
-              to="/docs"
+            <a
+              href={DOCS_URL}
               className="rounded-[9px] border border-[rgba(20,18,12,0.22)] px-4 py-[11px] font-mono text-xs uppercase tracking-[0.05em] text-ink no-underline"
             >
-              All benchmarks &rarr;
-            </Link>
+              CLI reference -&gt;
+            </a>
           </div>
 
-          <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {[
-              { v: '312', u: ' ms', d: 'Fastest SHA-256 proving run, iPhone 15 Pro, witness generation included.' },
-              { v: '118.9', u: ' MiB', d: 'Peak resident memory while proving, well within a phone-class budget.' },
-              { v: '40', u: '+ devices', d: 'Tracked in the reference device farm, from flagships down to budget hardware.' },
-            ].map((s) => (
-              <div key={s.v} className="border-t border-[rgba(20,18,12,0.14)] pt-[18px]">
-                <div className="text-[40px] font-semibold leading-none tracking-[-0.04em]">
-                  {s.v}
-                  <span className="text-[18px] font-normal text-faint">{s.u}</span>
-                </div>
-                <div className="mt-2 text-sm leading-[1.4] text-muted">{s.d}</div>
+          <div className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {CLI_COMMANDS.map(([cmd, desc]) => (
+              <div key={cmd} className="rounded-xl border border-[rgba(20,18,12,0.10)] bg-white px-5 py-5">
+                <div className="font-mono text-[13px] text-green">cargo mobench {cmd}</div>
+                <div className="mt-2 text-sm leading-[1.5] text-muted">{desc}</div>
               </div>
             ))}
           </div>
 
           <div className="rounded-2xl border border-[rgba(20,18,12,0.10)] bg-white px-8 pb-[34px] pt-[30px] shadow-[0_20px_50px_-34px_rgba(20,18,12,0.35)]">
             <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
-              <span className="text-[15px] font-medium">
-                SHA-256 proving · proving time by device
-              </span>
-              <span className="font-mono text-[11.5px] text-faint">lower is better · ms</span>
+              <span className="text-[15px] font-medium">Example device comparison</span>
+              <span className="font-mono text-[11.5px] text-faint">median duration · lower is better</span>
             </div>
             <div className="flex flex-col gap-5">
               {BENCH_ROWS.map((r) => (
@@ -388,147 +359,91 @@ function Landing() {
                           : 'linear-gradient(90deg,#356B26,#5E9C36)',
                       }}
                     >
-                      {r.value}
+                      {r.label}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
             <div className="mt-[26px] border-t border-[rgba(20,18,12,0.1)] pt-[18px] font-mono text-[10.5px] text-faint">
-              Illustrative figures · median of 50 runs · device farm v0.3
+              Illustrative figures · same benchmark, same warmup and measured iteration settings
             </div>
           </div>
         </div>
       </section>
 
-      {/* DEVICES */}
-      <section id="devices" className={`${SECTION} py-[100px]`}>
-        <div className={EYEBROW}>Supported hardware</div>
-        <h2 className={`${H2} mb-3.5 max-w-[720px]`}>
-          From this year's flagship to last year's budget phone.
+      <section id="sdk" className={`${SECTION} py-[100px]`}>
+        <div className={EYEBROW}>mobench-sdk</div>
+        <h2 className={`${H2} mb-3.5 max-w-[760px]`}>
+          Use the Rust API directly when the CLI is not enough.
         </h2>
-        <p className="m-0 mb-10 max-w-[600px] text-[17px] leading-[1.55] text-muted">
-          mobench targets stock iOS and Android over the platform's own tooling, no jailbreak, no
-          root, no custom firmware required.
+        <p className="m-0 mb-12 max-w-[690px] text-[17px] leading-[1.55] text-muted">
+          The SDK packages the timing harness, generated mobile runners, benchmark registry, builders,
+          codegen, and core types used by the CLI. Start with the full default feature set, or trim mobile
+          binaries down with runner-only.
         </p>
-        <div className="flex max-w-[920px] flex-wrap gap-3">
-          {DEVICES.map((d) => (
-            <span
-              key={d}
-              className="rounded-[30px] border border-[rgba(20,18,12,0.16)] bg-white px-[17px] py-[9px] text-sm text-ink"
-            >
-              {d}
-            </span>
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.08)] bg-[rgba(20,18,12,0.08)] md:grid-cols-3">
+          {SDK_MODULES.map(([name, desc], index) => (
+            <div key={name} className="bg-white px-7 pb-[34px] pt-[30px]">
+              <div className="mb-4 font-mono text-xs text-[#C7C5BC]">{String(index + 1).padStart(2, '0')}</div>
+              <h3 className="m-0 mb-2.5 text-[20px] font-semibold tracking-[-0.02em]">{name}</h3>
+              <p className="m-0 text-[15px] leading-[1.55] text-muted">{desc}</p>
+            </div>
           ))}
-          <span className="rounded-[30px] border border-dashed border-[rgba(20,18,12,0.22)] px-[17px] py-[9px] font-mono text-sm text-faint">
-            + 32 more
-          </span>
-        </div>
-        <div className="mt-[30px] flex gap-[26px] font-mono text-xs text-faint">
-          <span>iOS&nbsp;16+</span>
-          <span className="text-[rgba(20,18,12,0.2)]">/</span>
-          <span>ANDROID&nbsp;12+</span>
-          <span className="text-[rgba(20,18,12,0.2)]">/</span>
-          <span>arm64&nbsp;·&nbsp;x86_64</span>
         </div>
       </section>
 
-      {/* DEVICE CLOUD */}
       <section id="cloud" className="border-y border-[rgba(20,18,12,0.08)] bg-white">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-16 px-10 py-[100px]">
           <div className="min-w-[320px] flex-1 basis-[420px]">
             <div className={EYEBROW}>Device cloud</div>
-            <h2 className="m-0 mb-[18px] text-[clamp(30px,3.6vw,46px)] font-semibold leading-[1.04] tracking-[-0.04em]">
-              No device lab? Run on <span className="whitespace-nowrap">BrowserStack</span>.
+            <h2 className={`${H2} mb-[18px] max-w-[580px]`}>
+              BrowserStack runs use the same CLI flow.
             </h2>
-            <p className="m-0 mb-[26px] max-w-[480px] text-[17px] leading-[1.55] text-muted">
-              mobench plugs straight into BrowserStack's real-device cloud, so you can benchmark on
-              thousands of physical iOS and Android phones without owning, charging, or maintaining a
-              single one. Point it at your credentials, pick devices by name, and the same
-              reproducible report comes back.
+            <p className="m-0 mb-[26px] max-w-[520px] text-[17px] leading-[1.55] text-muted">
+              Set BrowserStack credentials, select devices by name, and use --release for smaller APK uploads.
+              mobench can resolve deterministic device sets from a matrix or profile for CI.
             </p>
-            <div className="mb-7 flex flex-wrap gap-[26px]">
-              {[
-                { v: '3,000+', l: 'real devices' },
-                { v: 'iOS + Android', l: 'every major OS version' },
-                { v: 'zero', l: 'local hardware' },
-              ].map((s) => (
-                <div key={s.l}>
-                  <div className="text-[28px] font-semibold tracking-[-0.03em] text-ink">{s.v}</div>
-                  <div className="mt-[3px] text-[13px] text-muted">{s.l}</div>
-                </div>
-              ))}
-            </div>
             <a
               href={BROWSERSTACK_URL}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 text-[15px] font-medium text-green no-underline"
             >
-              Explore BrowserStack &rarr;
+              Explore BrowserStack -&gt;
             </a>
           </div>
           <div className="min-w-[340px] flex-1 basis-[440px]">
-            <div className="overflow-hidden rounded-[14px] bg-leaf shadow-[0_24px_50px_-30px_rgba(20,18,12,0.55)]">
-              <div className="flex items-center justify-between border-b border-[rgba(20,18,12,0.10)] px-4 py-3 font-mono text-[11px] text-[#6C7850]">
-                <span className="flex items-center gap-2 text-[#243016]">
-                  <span className="h-[7px] w-[7px] rounded-full bg-[#2E7D1B]" /> browserstack
-                </span>
-                <span>2 devices</span>
-              </div>
-              <div className="p-5 font-mono text-[13px] leading-[1.95] text-code">
-                <div>
-                  <span className="text-[#8A9163]">$</span>{' '}
-                  <span className="text-[#2E7D1B]">mobench</span> run{' '}
-                  <span className="text-[#9A6411]">--farm</span> browserstack \
-                </div>
-                <div>
-                  {'  '}
-                  <span className="text-[#9A6411]">--device</span>{' '}
-                  <span className="text-[#4E7A1C]">"iPhone 15 Pro"</span>{' '}
-                  <span className="text-[#9A6411]">--device</span>{' '}
-                  <span className="text-[#4E7A1C]">"Pixel 8"</span>
-                </div>
-                <div className="text-[#6C7850]">
-                  {'  '}provisioning cloud devices … <span className="text-[#1E8A3B]">ready</span>
-                </div>
-                <div className="text-[#6C7850]">
-                  {'  '}prove  iPhone 15 Pro   <span className="text-[#1E8A3B]">312 ms</span>
-                </div>
-                <div className="text-[#6C7850]">
-                  {'  '}prove  Pixel 8         <span className="text-[#1E8A3B]">408 ms</span>
-                </div>
-                <div className="text-[#6C7850]">  report → ./mobench/cloud.json</div>
-              </div>
-            </div>
-            <div className="mt-2.5 text-right font-mono text-[10.5px] text-[#B6A988]">
-              BrowserStack is a third-party service · illustrative figures
-            </div>
+            <Terminal title="browserstack">
+              <Line cmd='export BROWSERSTACK_USERNAME="..."' />
+              <Line cmd='export BROWSERSTACK_ACCESS_KEY="..."' />
+              <Line cmd='cargo mobench run --target android --function hash_benchmark --devices "Google Pixel 7-13.0" --release' />
+              <div className="text-[#6C7850]">uploading APK ... ready</div>
+              <div className="text-[#6C7850]">collecting results ... summary extracted</div>
+            </Terminal>
           </div>
         </div>
       </section>
 
-      {/* BINDINGS */}
-      <section id="bindings" className={`${SECTION} py-[100px]`}>
-        <div className={EYEBROW}>Language bindings</div>
-        <h2 className={`${H2} mb-3.5 max-w-[760px]`}>Call mobench from Swift, Kotlin, or Rust.</h2>
-        <p className="m-0 mb-12 max-w-[620px] text-[17px] leading-[1.55] text-muted">
-          The <span className="font-mono text-[15px]">mobench-sdk</span> exposes a stable C ABI, so
-          you can drive the same benchmarking engine from any host language using the binding
-          generator you already trust.
+      <section id="requirements" className={`${SECTION} py-[100px]`}>
+        <div className={EYEBROW}>Platform setup</div>
+        <h2 className={`${H2} mb-3.5 max-w-[760px]`}>Know exactly what has to be installed.</h2>
+        <p className="m-0 mb-10 max-w-[620px] text-[17px] leading-[1.55] text-muted">
+          mobench keeps generated mobile projects inside target/mobench, but the host machine still needs
+          the platform toolchains for the targets you choose.
         </p>
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.08)] bg-[rgba(20,18,12,0.08)] md:grid-cols-3">
-          {BINDINGS.map((b) => (
-            <div key={b.n} className="bg-white px-7 pb-[34px] pt-[30px]">
-              <div className="mb-4 font-mono text-xs text-[#C7C5BC]">{b.n}</div>
-              <h3 className="m-0 mb-2.5 text-[20px] font-semibold tracking-[-0.02em]">{b.title}</h3>
-              <p className="m-0 text-[15px] leading-[1.55] text-muted">{b.body}</p>
-            </div>
+        <div className="flex max-w-[940px] flex-wrap gap-3">
+          {REQUIREMENTS.map((requirement) => (
+            <span
+              key={requirement}
+              className="rounded-[30px] border border-[rgba(20,18,12,0.16)] bg-white px-[17px] py-[9px] text-sm text-ink"
+            >
+              {requirement}
+            </span>
           ))}
         </div>
       </section>
 
-      {/* FAQ */}
       <section id="faq" className="border-t border-[rgba(20,18,12,0.08)] bg-white">
         <div className="mx-auto max-w-[900px] px-10 py-[100px]">
           <div className="mb-4 text-center font-mono text-[11.5px] uppercase tracking-[0.1em] text-green">
@@ -541,12 +456,8 @@ function Landing() {
             {FAQS.map((f, i) => (
               <AccordionItem key={f.q} value={`item-${i}`}>
                 <AccordionTrigger>
-                  <span className="font-mono text-xs text-[#B6A988]">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span className="flex-1 text-[18px] font-medium tracking-[-0.02em] text-ink">
-                    {f.q}
-                  </span>
+                  <span className="font-mono text-xs text-[#B6A988]">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="flex-1 text-[18px] font-medium tracking-[-0.02em] text-ink">{f.q}</span>
                   <span className="text-[22px] leading-none text-green transition-transform group-data-[state=open]:rotate-45">
                     +
                   </span>
@@ -560,17 +471,16 @@ function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="relative overflow-hidden bg-green text-white">
         <div className="absolute -right-[120px] -top-[180px] h-[540px] w-[540px] rounded-full border border-white/20" />
         <div className="absolute -bottom-[220px] -left-[120px] h-[480px] w-[480px] rounded-full border border-white/10" />
         <div className="relative mx-auto max-w-[1280px] px-10 py-[104px] text-center">
           <h2 className="mx-auto mb-[22px] max-w-[760px] text-[clamp(34px,4.4vw,58px)] font-semibold leading-[1.02] tracking-[-0.045em]">
-            Benchmark on the devices your users actually hold.
+            Ship Rust performance with mobile evidence.
           </h2>
-          <p className="mx-auto mb-9 max-w-[520px] text-[18px] leading-[1.5] text-white/80">
-            Free and open source under MIT. Install the CLI and get your first real-device report in
-            minutes.
+          <p className="mx-auto mb-9 max-w-[560px] text-[18px] leading-[1.5] text-white/80">
+            Install the CLI, add the SDK, and run your first benchmark through the same build and reporting
+            pipeline used by the full mobench stack.
           </p>
           <div className="flex flex-wrap justify-center gap-[13px]">
             <a
@@ -581,28 +491,26 @@ function Landing() {
             >
               View on GitHub
             </a>
-            <Link
-              to="/docs"
+            <a
+              href={DOCS_URL}
               className="rounded-[10px] border border-white/30 bg-white/10 px-6 py-3.5 text-[15px] font-medium text-white no-underline"
             >
-              Read the docs &rarr;
-            </Link>
+              Read docs -&gt;
+            </a>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="bg-footer text-[#A6A49B]">
         <div className="mx-auto max-w-[1280px] px-10 pb-10 pt-14">
           <div className="flex flex-wrap justify-between gap-10">
-            <div className="max-w-[320px]">
+            <div className="max-w-[340px]">
               <div className="mb-4 flex items-center gap-[11px]">
-                <span className="text-[20px] font-semibold tracking-[-0.045em] text-[#F2F1EC]">
-                  mobench
-                </span>
+                <span className="text-[20px] font-semibold tracking-[-0.045em] text-[#F2F1EC]">mobench</span>
               </div>
               <p className="m-0 mb-[18px] text-sm leading-[1.55]">
-                A Rust benchmarking harness for real mobile devices. Built and maintained by World.
+                Rust mobile benchmarking CLI, SDK, builders, runner, and procedural macros. Built and
+                maintained by World.
               </p>
               <a
                 href={WORLD_URL}
@@ -619,39 +527,81 @@ function Landing() {
                 title="Product"
                 links={[
                   { label: 'Features', href: '#features' },
-                  { label: 'Benchmarks', href: '#benchmarks' },
-                  { label: 'Devices', href: '#devices' },
+                  { label: 'SDK', href: '#sdk' },
+                  { label: 'Workflow', href: '#workflow' },
                 ]}
               />
-              <div className="flex flex-col gap-3">
-                <span className="mb-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[#8A9163]">
-                  Resources
-                </span>
-                <Link to="/docs" className="text-sm text-[#A6A49B] no-underline hover:text-[#F2F1EC]">
-                  Documentation
-                </Link>
-                <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="text-sm text-[#A6A49B] no-underline hover:text-[#F2F1EC]">
-                  GitHub
-                </a>
-                <a href={`${GITHUB_URL}/issues`} target="_blank" rel="noreferrer" className="text-sm text-[#A6A49B] no-underline hover:text-[#F2F1EC]">
-                  Issues
-                </a>
-              </div>
+              <FooterCol
+                title="Reference"
+                links={[
+                  { label: 'Documentation', href: DOCS_URL, external: true },
+                  { label: 'mobench', href: DOCSRS.mobench, external: true },
+                  { label: 'mobench-sdk', href: DOCSRS.sdk, external: true },
+                  { label: 'mobench-macros', href: DOCSRS.macros, external: true },
+                ]}
+              />
               <FooterCol
                 title="World"
                 links={[
                   { label: 'world.org', href: WORLD_URL, external: true },
-                  { label: 'Brand', href: 'https://world.org/brand', external: true },
+                  { label: 'GitHub', href: GITHUB_URL, external: true },
+                  { label: 'Issues', href: `${GITHUB_URL}/issues`, external: true },
                 ]}
               />
             </div>
           </div>
           <div className="mt-12 flex flex-wrap justify-between gap-3 border-t border-white/10 pt-[22px] font-mono text-[11.5px] text-[#8A9163]">
-            <span>© 2026 World · MIT License</span>
-            <span>mobile-bench-rs · v0.3.0</span>
+            <span>2026 World · MIT License</span>
+            <span>mobile-bench-rs · latest docs.rs 0.1.41</span>
           </div>
         </div>
       </footer>
+    </div>
+  )
+}
+
+function Terminal({
+  title,
+  action,
+  onAction,
+  children,
+}: {
+  title: string
+  action?: string
+  onAction?: () => void
+  children: ReactNode
+}) {
+  return (
+    <div className="overflow-hidden rounded-[14px] bg-leaf shadow-[0_24px_50px_-30px_rgba(20,18,12,0.55)]">
+      <div className="flex items-center justify-between border-b border-[rgba(20,18,12,0.10)] px-4 py-3">
+        <div className="flex gap-[7px]">
+          <span className="h-[11px] w-[11px] rounded-full bg-[#BBC6A4]" />
+          <span className="h-[11px] w-[11px] rounded-full bg-[#BBC6A4]" />
+          <span className="h-[11px] w-[11px] rounded-full bg-[#BBC6A4]" />
+        </div>
+        <span className="font-mono text-[11px] text-[#8A9163]">{title}</span>
+        {action ? (
+          <button
+            onClick={onAction}
+            className="cursor-pointer rounded-md border border-[rgba(20,18,12,0.14)] bg-[rgba(20,18,12,0.05)] px-2.5 py-1 font-mono text-[11px] text-[#46502F]"
+          >
+            {action}
+          </button>
+        ) : (
+          <span className="w-[46px]" />
+        )}
+      </div>
+      <SyntaxHighlightedCode className="px-5 py-[22px] font-mono text-[13.5px] leading-[2] text-code">
+        {children}
+      </SyntaxHighlightedCode>
+    </div>
+  )
+}
+
+function Line({ cmd }: { cmd: string }) {
+  return (
+    <div>
+      <span className="text-[#8A9163]">$</span> <span className="text-[#2E7D1B]">{cmd}</span>
     </div>
   )
 }
@@ -665,9 +615,7 @@ function FooterCol({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <span className="mb-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[#8A9163]">
-        {title}
-      </span>
+      <span className="mb-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[#8A9163]">{title}</span>
       {links.map((l) => (
         <a
           key={l.label}

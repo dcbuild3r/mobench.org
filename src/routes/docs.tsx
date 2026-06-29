@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Search } from 'lucide-react'
+import { SyntaxHighlightedCode } from '@/components/code-highlight'
 import { GithubIcon, WorldMark, GITHUB_URL, WORLD_URL } from '@/components/icons'
 import { cn } from '@/lib/utils'
 
@@ -13,10 +14,16 @@ type PageId =
   | 'intro'
   | 'install'
   | 'quick'
-  | 'write'
-  | 'ffi'
+  | 'configuration'
+  | 'benchmarks'
+  | 'sdk'
   | 'cli'
+  | 'browserstack'
+  | 'ci'
+  | 'profiling'
+  | 'reports'
   | 'packages'
+  | 'troubleshooting'
 
 interface PageDef {
   id: PageId
@@ -26,14 +33,164 @@ interface PageDef {
 }
 
 const PAGES: PageDef[] = [
-  { id: 'home', label: 'Overview', group: 'Introduction', toc: [['Get started', 'gs'], ['Guides', 'gd'], ['Reference', 'rf'], ['Quickstart', 'qs'], ['Quick links', 'ql']] },
-  { id: 'intro', label: 'What is mobench', group: 'Introduction', toc: [['Why benchmark on real devices', 'why'], ['How it works', 'how']] },
-  { id: 'install', label: 'Installation', group: 'Getting started', toc: [['Requirements', 'requirements'], ['Install the CLI', 'install'], ['Verify the install', 'verify']] },
-  { id: 'quick', label: 'Quickstart', group: 'Getting started', toc: [['1 · Connect a device', 'connect'], ['2 · Mark a benchmark', 'annotate'], ['3 · Run it', 'run'], ['4 · Read the report', 'read']] },
-  { id: 'write', label: 'Writing benchmarks', group: 'Guides', toc: [['The basic shape', 'basic'], ['Parameters', 'params']] },
-  { id: 'ffi', label: 'FFI bindings', group: 'Guides', toc: [['Why bindings', 'whyffi'], ['UniFFI', 'uniffi'], ['Bolt FFI', 'bolt'], ['Native FFI', 'nativeffi']] },
-  { id: 'cli', label: 'CLI reference', group: 'Reference', toc: [['mobench run', 'run'], ['Other commands', 'cmds']] },
-  { id: 'packages', label: 'Packages & API', group: 'Reference', toc: [['The three crates', 'crates'], ['mobench', 'p-mobench'], ['mobench-sdk', 'p-sdk'], ['mobench-macros', 'p-macros'], ['Full API on docs.rs', 'docsrs']] },
+  {
+    id: 'home',
+    label: 'Overview',
+    group: 'Introduction',
+    toc: [
+      ['Start here', 'start'],
+      ['What is covered', 'covered'],
+      ['Common path', 'path'],
+      ['API links', 'links'],
+    ],
+  },
+  {
+    id: 'intro',
+    label: 'Concepts',
+    group: 'Introduction',
+    toc: [
+      ['What mobench is', 'what'],
+      ['How the system fits', 'system'],
+      ['Artifact flow', 'flow'],
+      ['Crate ecosystem', 'ecosystem'],
+    ],
+  },
+  {
+    id: 'install',
+    label: 'Installation',
+    group: 'Getting started',
+    toc: [
+      ['Install CLI', 'cli'],
+      ['Cargo setup', 'cargo'],
+      ['Android setup', 'android'],
+      ['iOS setup', 'ios'],
+      ['Verify setup', 'verify'],
+    ],
+  },
+  {
+    id: 'quick',
+    label: 'Quickstart',
+    group: 'Getting started',
+    toc: [
+      ['Initialize config', 'init'],
+      ['Write a benchmark', 'write'],
+      ['Build artifacts', 'build'],
+      ['Run locally', 'local'],
+      ['Run on devices', 'devices'],
+    ],
+  },
+  {
+    id: 'configuration',
+    label: 'Configuration',
+    group: 'Getting started',
+    toc: [
+      ['TOML config', 'toml'],
+      ['BrowserStack block', 'browserstack'],
+      ['Device inputs', 'devices'],
+      ['Validation', 'validation'],
+    ],
+  },
+  {
+    id: 'benchmarks',
+    label: 'Writing benchmarks',
+    group: 'Guides',
+    toc: [
+      ['Basic shape', 'basic'],
+      ['Setup functions', 'setup'],
+      ['Macro behavior', 'macro'],
+      ['Discovery', 'discovery'],
+      ['Best practices', 'best'],
+    ],
+  },
+  {
+    id: 'sdk',
+    label: 'SDK reference',
+    group: 'Guides',
+    toc: [
+      ['Architecture', 'architecture'],
+      ['Feature flags', 'features'],
+      ['Runner APIs', 'runner'],
+      ['Builders', 'builders'],
+      ['Re-exports', 'exports'],
+    ],
+  },
+  {
+    id: 'cli',
+    label: 'CLI reference',
+    group: 'Reference',
+    toc: [
+      ['Commands', 'commands'],
+      ['Run command', 'run'],
+      ['Build command', 'build'],
+      ['Fixture helpers', 'fixtures'],
+      ['Global flags', 'global'],
+    ],
+  },
+  {
+    id: 'browserstack',
+    label: 'BrowserStack',
+    group: 'Reference',
+    toc: [
+      ['Credentials', 'credentials'],
+      ['Device names', 'names'],
+      ['Release uploads', 'release'],
+      ['Fetching results', 'fetch'],
+    ],
+  },
+  {
+    id: 'ci',
+    label: 'CI workflows',
+    group: 'Reference',
+    toc: [
+      ['CI command', 'command'],
+      ['Matrix validation', 'matrix'],
+      ['Device resolution', 'resolution'],
+      ['Sticky reports', 'sticky'],
+    ],
+  },
+  {
+    id: 'profiling',
+    label: 'Profiling',
+    group: 'Reference',
+    toc: [
+      ['What profiling does', 'what'],
+      ['Local native capture', 'local'],
+      ['Timeline phases', 'phases'],
+    ],
+  },
+  {
+    id: 'reports',
+    label: 'Outputs & reports',
+    group: 'Reference',
+    toc: [
+      ['Output directory', 'directory'],
+      ['Run outputs', 'run'],
+      ['Programmatic types', 'types'],
+      ['Summary extraction', 'summary'],
+    ],
+  },
+  {
+    id: 'packages',
+    label: 'Packages & API',
+    group: 'Reference',
+    toc: [
+      ['mobench', 'mobench'],
+      ['mobench-sdk', 'sdk'],
+      ['mobench-macros', 'macros'],
+      ['docs.rs', 'docsrs'],
+    ],
+  },
+  {
+    id: 'troubleshooting',
+    label: 'Troubleshooting',
+    group: 'Reference',
+    toc: [
+      ['Benchmarks missing', 'missing'],
+      ['Build failures', 'build'],
+      ['BrowserStack failures', 'browserstack'],
+      ['Noisy results', 'noise'],
+    ],
+  },
 ]
 
 const DOCSRS = {
@@ -42,28 +199,28 @@ const DOCSRS = {
   macros: 'https://docs.rs/mobench-macros/latest/mobench_macros/',
 }
 
-/* ---------- small presentational helpers ---------- */
+const DOCS_URL = 'https://docs.mobench.org'
+
+const C = {
+  dollar: 'text-[#8A9163]',
+  cmd: 'text-[#2E7D1B]',
+  flag: 'text-[#9A6411]',
+  out: 'text-[#6C7850]',
+  ok: 'text-[#1E8A3B]',
+  str: 'text-[#4E7A1C]',
+  kw: 'text-[#8A3DB0]',
+}
 
 function Mono({ children }: { children: ReactNode }) {
-  return (
-    <span className="rounded-[5px] bg-[rgba(20,18,12,0.06)] px-1.5 py-px font-mono text-[14px]">
-      {children}
-    </span>
-  )
+  return <span className="rounded-[5px] bg-[rgba(20,18,12,0.06)] px-1.5 py-px font-mono text-[14px]">{children}</span>
 }
 
 function H1({ children }: { children: ReactNode }) {
-  return (
-    <h1 className="m-0 mb-[18px] text-[50px] font-semibold leading-[1.03] tracking-[-0.045em]">
-      {children}
-    </h1>
-  )
+  return <h1 className="m-0 mb-[18px] text-[50px] font-semibold leading-[1.03] tracking-[-0.045em]">{children}</h1>
 }
 
 function Lead({ children }: { children: ReactNode }) {
-  return (
-    <p className="m-0 mb-11 text-[21px] leading-[1.6] text-muted">{children}</p>
-  )
+  return <p className="m-0 mb-11 text-[21px] leading-[1.6] text-muted">{children}</p>
 }
 
 function H2({ id, children, tight }: { id: string; children: ReactNode; tight?: boolean }) {
@@ -81,23 +238,14 @@ function H2({ id, children, tight }: { id: string; children: ReactNode; tight?: 
 }
 
 function P({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <p className={cn('m-0 mb-3.5 text-[17.5px] leading-[1.78] text-ink-soft', className)}>
-      {children}
-    </p>
-  )
+  return <p className={cn('m-0 mb-3.5 text-[17.5px] leading-[1.78] text-ink-soft', className)}>{children}</p>
 }
 
 function Code({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div
-      className={cn(
-        'overflow-x-auto rounded-xl bg-leaf px-5 py-[18px] font-mono text-[13.5px] leading-[1.9] text-code',
-        className,
-      )}
-    >
+    <SyntaxHighlightedCode className={cn('overflow-x-auto rounded-xl bg-leaf px-5 py-[18px] font-mono text-[13.5px] leading-[1.9] text-code', className)}>
       {children}
-    </div>
+    </SyntaxHighlightedCode>
   )
 }
 
@@ -114,32 +262,23 @@ function InfoCallout({ children }: { children: ReactNode }) {
   )
 }
 
-function WarnCallout({ children }: { children: ReactNode }) {
+function Table({ rows }: { rows: [string, ReactNode][] }) {
   return (
-    <div className="flex gap-3.5 rounded-xl border border-[rgba(196,140,30,0.32)] bg-[#F6EFDD] px-5 py-[18px]">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B07A12" strokeWidth="1.8" className="mt-px flex-none">
-        <path d="M12 3l9 16H3z" />
-        <line x1="12" y1="10" x2="12" y2="14" />
-      </svg>
-      <p className="m-0 text-[14.5px] leading-[1.6] text-[#6B5314]">{children}</p>
+    <div className="my-6 overflow-hidden rounded-xl border border-[rgba(20,18,12,0.10)] bg-white">
+      {rows.map(([label, body]) => (
+        <div key={label} className="grid grid-cols-[180px_1fr] border-b border-[rgba(20,18,12,0.08)] last:border-b-0">
+          <div className="bg-[#F6F1E1] px-4 py-3 font-mono text-[13px] text-green">{label}</div>
+          <div className="px-4 py-3 text-[15px] leading-[1.6] text-ink-soft">{body}</div>
+        </div>
+      ))}
     </div>
   )
 }
 
-const C = {
-  dollar: 'text-[#8A9163]',
-  cmd: 'text-[#2E7D1B]',
-  flag: 'text-[#9A6411]',
-  out: 'text-[#6C7850]',
-  ok: 'text-[#1E8A3B]',
-  bad: 'text-[#C2521D]',
-  kw: 'text-[#8A3DB0]',
-  str: 'text-[#4E7A1C]',
-  fn: 'text-[#1C7898]',
-  num: 'text-[#F78C6C]',
+function Cards({ children }: { children: ReactNode }) {
+  return <div className="my-6 grid grid-cols-[repeat(auto-fill,minmax(238px,1fr))] gap-4">{children}</div>
 }
 
-/* ---------- card used on the hub ---------- */
 function HubCard({ title, desc, onClick }: { title: string; desc: string; onClick: () => void }) {
   return (
     <button
@@ -148,7 +287,7 @@ function HubCard({ title, desc, onClick }: { title: string; desc: string; onClic
     >
       <div className="flex items-center justify-between">
         <span className="text-[18px] font-semibold tracking-[-0.02em] text-ink">{title}</span>
-        <span className="text-[18px] text-green">&rarr;</span>
+        <span className="text-[18px] text-green">-&gt;</span>
       </div>
       <span className="text-[14.5px] leading-[1.5] text-muted">{desc}</span>
     </button>
@@ -165,54 +304,53 @@ function LinkCard({ title, desc, href }: { title: string; desc: string; href: st
     >
       <div className="flex items-center justify-between">
         <span className="text-[17px] font-semibold text-ink">{title}</span>
-        <span className="text-[15px] text-faint">&#8599;</span>
+        <span className="text-[15px] text-faint">external</span>
       </div>
       <span className="text-sm leading-[1.5] text-muted">{desc}</span>
     </a>
   )
 }
 
-/* ---------- main ---------- */
-
-function Docs() {
+export function Docs() {
   const [page, setPage] = useState<PageId>('home')
   const [qtab, setQtab] = useState(0)
-
-  const idx = PAGES.findIndex((p) => p.id === page)
-  const active = PAGES[idx]
-  const prev = PAGES[idx - 1]
-  const next = PAGES[idx + 1]
-
-  const go = (id: PageId) => {
-    setPage(id)
-    document.querySelector('main.mb-scroll')?.scrollTo({ top: 0 })
-  }
-
-  const groups: string[] = []
-  PAGES.forEach((p) => {
-    if (!groups.includes(p.group)) groups.push(p.group)
-  })
+  const active = PAGES.find((p) => p.id === page) ?? PAGES[0]
+  const groups = Array.from(new Set(PAGES.map((p) => p.group)))
+  const index = PAGES.findIndex((p) => p.id === page)
+  const prev = index > 0 ? PAGES[index - 1] : null
+  const next = index < PAGES.length - 1 ? PAGES[index + 1] : null
+  const go = (id: PageId) => setPage(id)
 
   return (
     <div className="min-h-screen bg-cream text-ink">
-      {/* TOP BAR */}
       <header className="sticky top-0 z-50 border-b border-[rgba(20,18,12,0.09)] bg-[rgba(244,239,221,0.82)] backdrop-blur-[14px]">
         <div className="flex h-[60px] items-center justify-between gap-6 px-7">
-          <Link to="/" className="flex items-center gap-2.5 no-underline text-ink">
-            <span className="text-[19px] font-semibold tracking-[-0.045em]">mobench</span>
-            <span className="rounded-[5px] border border-[rgba(20,18,12,0.16)] px-1.5 py-0.5 font-mono text-[10.5px] text-faint">
-              docs
-            </span>
-          </Link>
+          {typeof window !== 'undefined' && window.location.hostname === 'docs.mobench.org' ? (
+            <a href="https://mobench.org" className="flex items-center gap-2.5 no-underline text-ink">
+              <span className="text-[19px] font-semibold tracking-[-0.045em]">mobench</span>
+              <span className="rounded-[5px] border border-[rgba(20,18,12,0.16)] px-1.5 py-0.5 font-mono text-[10.5px] text-faint">docs</span>
+            </a>
+          ) : (
+            <Link to="/" className="flex items-center gap-2.5 no-underline text-ink">
+              <span className="text-[19px] font-semibold tracking-[-0.045em]">mobench</span>
+              <span className="rounded-[5px] border border-[rgba(20,18,12,0.16)] px-1.5 py-0.5 font-mono text-[10.5px] text-faint">docs</span>
+            </Link>
+          )}
           <div className="hidden max-w-[420px] flex-1 items-center gap-[9px] rounded-[9px] border border-[rgba(20,18,12,0.14)] bg-white px-3 py-2 text-faint md:flex">
             <Search size={15} />
-            <span className="flex-1 text-[13.5px]">Search the docs</span>
-            <span className="rounded-[5px] border border-[rgba(20,18,12,0.14)] px-1.5 py-px font-mono text-[11px]">
-              ⌘K
-            </span>
+            <span className="flex-1 text-[13.5px]">Search docs</span>
+            <span className="rounded-[5px] border border-[rgba(20,18,12,0.14)] px-1.5 py-px font-mono text-[11px]">⌘K</span>
           </div>
           <div className="flex items-center gap-4 text-[13.5px] text-muted">
-            <Link to="/" className="no-underline text-inherit">Home</Link>
+            {typeof window !== 'undefined' && window.location.hostname === 'docs.mobench.org' ? (
+              <a href="https://mobench.org" className="no-underline text-inherit">
+                Home
+              </a>
+            ) : (
+              <Link to="/" className="no-underline text-inherit">
+                Home
+              </Link>
+            )}
             <a
               href={GITHUB_URL}
               target="_blank"
@@ -226,15 +364,11 @@ function Docs() {
         </div>
       </header>
 
-      {/* 3 COLUMN */}
       <div className="mx-auto flex max-w-[1600px] items-start">
-        {/* SIDEBAR */}
         <aside className="mb-scroll sticky top-[60px] h-[calc(100vh-60px)] w-[282px] flex-none overflow-y-auto border-r border-[rgba(20,18,12,0.08)] py-10 pl-[34px] pr-[22px]">
           {groups.map((g) => (
             <div key={g} className="mb-[26px]">
-              <div className="mb-3 pl-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-faintest">
-                {g}
-              </div>
+              <div className="mb-3 pl-3 font-mono text-[10.5px] uppercase tracking-[0.1em] text-faintest">{g}</div>
               {PAGES.filter((p) => p.group === g).map((p) => {
                 const isActive = p.id === page
                 return (
@@ -255,11 +389,11 @@ function Docs() {
             </div>
           ))}
           <div className="mt-[30px] border-t border-[rgba(20,18,12,0.08)] pt-[22px]">
-            <a href={DOCSRS.mobench} target="_blank" rel="noreferrer" className="block px-3 py-1.5 text-[13px] font-medium text-green no-underline">
-              API reference on docs.rs &#8599;
+            <a href={DOCS_URL} className="block px-3 py-1.5 text-[13px] font-medium text-green no-underline">
+              docs.mobench.org
             </a>
-            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="block px-3 py-1.5 text-[13px] text-faint no-underline">
-              Changelog &rarr;
+            <a href={DOCSRS.mobench} target="_blank" rel="noreferrer" className="block px-3 py-1.5 text-[13px] text-faint no-underline">
+              API reference on docs.rs
             </a>
             <a href={WORLD_URL} target="_blank" rel="noreferrer" className="flex items-center gap-[7px] px-3 py-1.5 text-[13px] text-faint no-underline">
               <WorldMark width={16} height={16} /> Built by World
@@ -267,32 +401,34 @@ function Docs() {
           </div>
         </aside>
 
-        {/* MAIN */}
         <main className="mb-scroll flex h-[calc(100vh-60px)] min-w-0 flex-1 justify-center overflow-y-auto px-12 pb-[130px] pt-14">
-          <article className="w-full max-w-[880px]">
+          <article className="w-full max-w-[920px]">
             {page !== 'home' && (
-              <div className="mb-3.5 font-mono text-[11.5px] uppercase tracking-[0.08em] text-green">
-                {active.group}
-              </div>
+              <div className="mb-3.5 font-mono text-[11.5px] uppercase tracking-[0.08em] text-green">{active.group}</div>
             )}
 
             {page === 'home' && <HomePage go={go} qtab={qtab} setQtab={setQtab} />}
             {page === 'intro' && <IntroPage />}
             {page === 'install' && <InstallPage />}
             {page === 'quick' && <QuickPage />}
-            {page === 'write' && <WritePage />}
-            {page === 'ffi' && <FfiPage />}
+            {page === 'configuration' && <ConfigurationPage />}
+            {page === 'benchmarks' && <BenchmarkPage />}
+            {page === 'sdk' && <SdkPage />}
             {page === 'cli' && <CliPage />}
+            {page === 'browserstack' && <BrowserStackPage />}
+            {page === 'ci' && <CiPage />}
+            {page === 'profiling' && <ProfilingPage />}
+            {page === 'reports' && <ReportsPage />}
             {page === 'packages' && <PackagesPage />}
+            {page === 'troubleshooting' && <TroubleshootingPage />}
 
-            {/* prev / next */}
             <div className="mt-16 flex justify-between gap-4 border-t border-[rgba(20,18,12,0.1)] pt-7">
               {prev ? (
                 <button
                   onClick={() => go(prev.id)}
                   className="flex-1 cursor-pointer rounded-xl border border-[rgba(20,18,12,0.12)] bg-white px-[18px] py-4 text-left font-sans"
                 >
-                  <span className="mb-[5px] block font-mono text-[11px] text-faint">&larr; PREVIOUS</span>
+                  <span className="mb-[5px] block font-mono text-[11px] text-faint">PREVIOUS</span>
                   <span className="text-[15px] font-medium text-ink">{prev.label}</span>
                 </button>
               ) : (
@@ -303,7 +439,7 @@ function Docs() {
                   onClick={() => go(next.id)}
                   className="flex-1 cursor-pointer rounded-xl border border-[rgba(20,18,12,0.12)] bg-white px-[18px] py-4 text-right font-sans"
                 >
-                  <span className="mb-[5px] block font-mono text-[11px] text-faint">NEXT &rarr;</span>
+                  <span className="mb-[5px] block font-mono text-[11px] text-faint">NEXT</span>
                   <span className="text-[15px] font-medium text-ink">{next.label}</span>
                 </button>
               ) : (
@@ -313,11 +449,8 @@ function Docs() {
           </article>
         </main>
 
-        {/* RIGHT TOC */}
         <aside className="sticky top-[60px] hidden h-[calc(100vh-60px)] w-[218px] flex-none overflow-y-auto px-7 pb-12 pl-[18px] pt-[60px] xl:block">
-          <div className="mb-4 font-mono text-[10.5px] uppercase tracking-[0.1em] text-faintest">
-            On this page
-          </div>
+          <div className="mb-4 font-mono text-[10.5px] uppercase tracking-[0.1em] text-faintest">On page</div>
           <div className="flex flex-col gap-[11px] border-l border-[rgba(20,18,12,0.1)] pl-4">
             {active.toc.map(([label, id]) => (
               <a key={id} href={`#${id}`} className="text-[13px] leading-[1.4] text-muted no-underline hover:text-green">
@@ -331,8 +464,6 @@ function Docs() {
   )
 }
 
-/* ============ PAGES ============ */
-
 function HomePage({
   go,
   qtab,
@@ -342,141 +473,95 @@ function HomePage({
   qtab: number
   setQtab: (n: number) => void
 }) {
-  const qLabels = ['Install', 'Annotate', 'Run', 'Report']
+  const qLabels = ['Install', 'Configure', 'Annotate', 'Run']
   return (
     <div>
       <button
         onClick={() => go('quick')}
         className="mb-[34px] inline-flex cursor-pointer items-center gap-3 rounded-[40px] border border-green/20 bg-green/[0.07] py-2 pl-4 pr-2 font-sans transition-all hover:border-green/50 hover:bg-green/10"
       >
-        <span className="rounded-[30px] bg-green px-[9px] py-[3px] font-mono text-[10.5px] uppercase tracking-[0.06em] text-white">
-          New
-        </span>
-        <span className="text-[14.5px] text-ink-soft">
-          mobench v0.3 benchmarks on real devices &amp; BrowserStack
-        </span>
-        <span className="pr-2 text-[14px] font-medium text-green">Get started &rarr;</span>
+        <span className="rounded-[30px] bg-green px-[9px] py-[3px] font-mono text-[10.5px] uppercase tracking-[0.06em] text-white">0.1.41</span>
+        <span className="text-[14.5px] text-ink-soft">Complete guide for mobench, mobench-sdk, and mobench-macros</span>
+        <span className="pr-2 text-[14px] font-medium text-green">Get started</span>
       </button>
 
-      <h1 className="m-0 mb-[22px] text-[52px] font-semibold leading-[1.02] tracking-[-0.045em]">
-        mobench documentation
-      </h1>
-      <p className="m-0 mb-6 max-w-[720px] text-[21px] leading-[1.6] text-muted">
-        mobench is an open-source Rust harness that benchmarks your code on real iOS and Android
-        phones, reporting wall-clock time, peak memory, and energy. Everything you need to install
-        it, write benches, run on devices, and read results lives here.
-      </p>
-      <div className="mb-3 flex flex-wrap gap-3">
-        <button
-          onClick={() => go('install')}
-          className="cursor-pointer rounded-[10px] bg-green px-5 py-3 font-sans text-[15px] font-medium text-white transition-colors hover:bg-green-dark"
-        >
+      <H1>mobench documentation</H1>
+      <Lead>
+        Build, run, report, and profile Rust benchmarks on mobile platforms using the mobench CLI, SDK runtime,
+        generated mobile runners, and <Mono>#[benchmark]</Mono> macro.
+      </Lead>
+
+      <div id="start" className="mb-11 flex flex-wrap gap-3 [scroll-margin-top:90px]">
+        <button onClick={() => go('install')} className="cursor-pointer rounded-[10px] bg-green px-5 py-3 font-sans text-[15px] font-medium text-white hover:bg-green-dark">
           Install mobench
         </button>
-        <a
-          href={GITHUB_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-[10px] border border-[rgba(20,18,12,0.16)] bg-white px-5 py-3 text-[15px] font-medium text-ink no-underline"
-        >
-          GitHub repo
+        <button onClick={() => go('quick')} className="cursor-pointer rounded-[10px] border border-[rgba(20,18,12,0.16)] bg-white px-5 py-3 font-sans text-[15px] font-medium text-ink">
+          Quickstart
+        </button>
+        <a href={DOCSRS.mobench} target="_blank" rel="noreferrer" className="rounded-[10px] border border-[rgba(20,18,12,0.16)] bg-white px-5 py-3 text-[15px] font-medium text-ink no-underline">
+          Rustdoc API
         </a>
       </div>
 
-      <h2 id="gs" className="mb-5 mt-[60px] text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        Get started
-      </h2>
-      <div className="mb-2 grid grid-cols-[repeat(auto-fill,minmax(238px,1fr))] gap-4">
-        <HubCard title="What is mobench" desc="Why on-device benchmarking matters and how a run works end to end." onClick={() => go('intro')} />
-        <HubCard title="Installation" desc="Install the CLI from crates.io and verify your host toolchain." onClick={() => go('install')} />
-        <HubCard title="Quickstart" desc="From a fresh checkout to your first real-device report in a minute." onClick={() => go('quick')} />
-      </div>
+      <H2 id="covered" tight>What is covered</H2>
+      <Cards>
+        <HubCard title="CLI workflows" desc="init, build, run, ci run, doctor, config validate, devices resolve, fixture helpers, reports, fetch, and package commands." onClick={() => go('cli')} />
+        <HubCard title="Benchmark authoring" desc="Function signatures, setup data, discovery, inventory registration, black_box usage, and deterministic benchmark style." onClick={() => go('benchmarks')} />
+        <HubCard title="SDK APIs" desc="Feature flags, BenchmarkBuilder, BenchSpec, run_benchmark, AndroidBuilder, IosBuilder, timing, registry, and FFI helpers." onClick={() => go('sdk')} />
+        <HubCard title="Automation" desc="BrowserStack credentials, device selection, CI summaries, matrix validation, sticky PR reports, and output files." onClick={() => go('ci')} />
+      </Cards>
 
-      <h2 id="gd" className="mb-5 mt-14 text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        Guides
-      </h2>
-      <div className="mb-2 grid grid-cols-[repeat(auto-fill,minmax(238px,1fr))] gap-4">
-        <HubCard title="Writing benchmarks" desc="Annotate functions with #[mobench] and tune samples, warmup, and cold runs." onClick={() => go('write')} />
-        <HubCard title="FFI bindings" desc="Drive the engine from Swift or Kotlin with UniFFI, Bolt FFI, or native FFI." onClick={() => go('ffi')} />
-      </div>
-
-      <h2 id="rf" className="mb-5 mt-14 text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        Reference
-      </h2>
-      <div className="mb-2 grid grid-cols-[repeat(auto-fill,minmax(238px,1fr))] gap-4">
-        <HubCard title="CLI reference" desc="Every mobench subcommand and flag, from run to doctor to farm." onClick={() => go('cli')} />
-        <HubCard title="Packages & API" desc="The three crates, plus the full rustdoc API hosted on docs.rs." onClick={() => go('packages')} />
-      </div>
-
-      <h2 id="qs" className="mb-4 mt-14 text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        Quickstart
-      </h2>
-      <p className="m-0 mb-5 text-[17.5px] leading-[1.7] text-ink-soft">
-        Install the CLI, mark a function as a benchmark, run it on a device, and read the report.
-      </p>
+      <H2 id="path">Common path</H2>
       <div className="overflow-hidden rounded-2xl border border-[rgba(20,18,12,0.10)] shadow-[0_18px_44px_-34px_rgba(20,18,12,0.4)]">
         <div className="flex gap-1 border-b border-[rgba(20,18,12,0.08)] bg-[#EFE9D5] p-[9px]">
           {qLabels.map((label, i) => (
             <button
               key={label}
               onClick={() => setQtab(i)}
-              className={cn(
-                'cursor-pointer rounded-lg px-4 py-2 font-sans text-[13.5px]',
-                qtab === i ? 'bg-ink font-medium text-white' : 'bg-transparent font-normal text-muted',
-              )}
+              className={cn('cursor-pointer rounded-lg px-4 py-2 font-sans text-[13.5px]', qtab === i ? 'bg-ink text-white' : 'text-muted hover:bg-white/60')}
             >
               {label}
             </button>
           ))}
         </div>
-        <div className="overflow-x-auto bg-leaf px-6 py-6 font-mono text-[14px] leading-[1.95] text-code">
+        <div className="bg-leaf p-6">
           {qtab === 0 && (
-            <div>
-              <div><span className={C.dollar}>$</span> <span className={C.cmd}>cargo</span> install mobench</div>
-              <div className={C.out}>  installed mobench v0.3.0</div>
-            </div>
+            <Code>
+              <Line cmd="cargo install mobench" />
+              <Line cmd="cargo install cargo-ndk" />
+              <Line cmd="rustup target add aarch64-linux-android" />
+            </Code>
           )}
           {qtab === 1 && (
-            <div>
-              <div><span className={C.kw}>use</span> mobench::mobench;</div>
-              <div>&nbsp;</div>
-              <div><span className={C.fn}>#[mobench]</span></div>
-              <div><span className={C.kw}>fn</span> <span className={C.fn}>prove</span>(b: &amp;<span className={C.flag}>mut</span> Bencher) {'{'}</div>
-              <div>&nbsp;&nbsp;b.iter(|| prover.prove(&amp;circuit));</div>
-              <div>{'}'}</div>
-            </div>
+            <Code>
+              <Line cmd="cargo mobench init --target android --output bench-config.toml" />
+              <div>target = "android"</div>
+              <div>function = "my_crate::hash_benchmark"</div>
+              <div>iterations = 100</div>
+              <div>warmup = 10</div>
+            </Code>
           )}
           {qtab === 2 && (
-            <div>
-              <div><span className={C.dollar}>$</span> <span className={C.cmd}>mobench</span> run <span className={C.flag}>--bench</span> prove <span className={C.flag}>--device</span> pixel-8</div>
-              <div className={C.out}>  prove  <span className={C.ok}>408 ms</span>  rss 118.9 MiB  energy 0.31 J</div>
-            </div>
+            <Code>
+              <div><span className={C.kw}>use</span> mobench_sdk::{'{'}benchmark, black_box{'}'};</div>
+              <div>#[benchmark]</div>
+              <div>pub fn hash_benchmark() {'{'} black_box(work()); {'}'}</div>
+            </Code>
           )}
           {qtab === 3 && (
-            <div>
-              <div><span className={C.dollar}>$</span> <span className={C.cmd}>mobench</span> report <span className={C.flag}>--diff</span> baseline.json</div>
-              <div className={C.out}>  prove   408 ms  <span className={C.bad}>+4.2%</span>  vs 391 ms</div>
-            </div>
+            <Code>
+              <Line cmd='cargo mobench run --target android --function my_crate::hash_benchmark --iterations 100 --warmup 10 --devices "Google Pixel 7-13.0" --release' />
+            </Code>
           )}
         </div>
       </div>
-      <div className="mt-3.5 flex gap-[18px]">
-        <a href={DOCSRS.sdk} target="_blank" rel="noreferrer" className="text-sm font-medium text-green no-underline">
-          Swift &amp; Kotlin via FFI &rarr;
-        </a>
-        <button onClick={() => go('quick')} className="cursor-pointer p-0 font-sans text-sm font-medium text-green">
-          Full quickstart &rarr;
-        </button>
-      </div>
 
-      <h2 id="ql" className="mb-5 mt-14 text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        Quick links
-      </h2>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(238px,1fr))] gap-4">
-        <LinkCard title="GitHub" desc="Source, issues, and releases for mobile-bench-rs." href={GITHUB_URL} />
-        <LinkCard title="API on docs.rs" desc="Full rustdoc for mobench, mobench-sdk, and mobench-macros." href={DOCSRS.mobench} />
-        <LinkCard title="BrowserStack" desc="Run benches on a real-device cloud, no local hardware." href="https://www.browserstack.com/" />
-      </div>
+      <H2 id="links">API links</H2>
+      <Cards>
+        <LinkCard title="mobench rustdoc" desc="CLI overview, commands, config module, structs, enums, and programmatic run helpers." href={DOCSRS.mobench} />
+        <LinkCard title="mobench-sdk rustdoc" desc="Runtime, builders, modules, feature flags, re-exports, macros, and runner APIs." href={DOCSRS.sdk} />
+        <LinkCard title="mobench-macros rustdoc" desc="#[benchmark] usage, setup support, registration behavior, and requirements." href={DOCSRS.macros} />
+      </Cards>
     </div>
   )
 }
@@ -484,57 +569,57 @@ function HomePage({
 function IntroPage() {
   return (
     <div>
-      <H1>Introduction</H1>
-      <Lead>
-        mobench is an open-source Rust harness that runs your benchmarks on real iOS and Android
-        phones, then reports wall-clock time, peak memory, and energy for each device. It is built
-        and maintained by World.
-      </Lead>
+      <H1>Concepts</H1>
+      <Lead>mobench is a three-crate ecosystem for running Rust benchmark functions through generated mobile runners.</Lead>
 
-      <H2 id="why">Why benchmark on real devices</H2>
+      <H2 id="what" tight>What mobench is</H2>
       <P>
-        Emulators and CI runners tell you how fast your code is on a data-center CPU with no thermal
-        ceiling. Your users run it on a phone with a shared memory bus, an aggressive scheduler, and
-        a battery that throttles under load. Those are different machines, and the gap is often where
-        regressions hide.
+        The <Mono>mobench</Mono> crate is the command-line orchestrator. It builds Rust code for Android or
+        iOS, packages generated mobile apps, runs benchmarks locally or on BrowserStack devices, plans supported
+        local native profiling captures, and writes benchmark reports.
       </P>
       <P>
-        mobench closes that gap by deploying your benches to physical hardware and measuring what
-        actually happens there, including cold starts, thermal throttling, and memory pressure that a
-        desktop run never surfaces.
+        The <Mono>mobench-sdk</Mono> crate is the runtime and build library used by that CLI. It owns the timing
+        harness, benchmark registry, runner APIs, codegen, mobile builders, shared types, and FFI helpers.
       </P>
-      <InfoCallout>
-        mobench grew out of World's work on client-side proving, where a few hundred milliseconds on
-        a mid-range Android phone is the difference between a feature shipping and not. The metrics it
-        captures reflect that priority.
-      </InfoCallout>
+      <P>
+        The <Mono>mobench-macros</Mono> crate provides the <Mono>#[benchmark]</Mono> attribute. Most projects
+        import it through <Mono>mobench_sdk::benchmark</Mono>.
+      </P>
 
-      <H2 id="how">How it works</H2>
-      <P>
-        A single run moves through four stages, all driven by the <Mono>mobench</Mono> CLI:
-      </P>
-      <div className="mb-7 flex flex-col gap-2.5">
-        {[
-          ['01', 'Discover', ', finds attached devices over USB or a configured device farm.'],
-          ['02', 'Build', ', cross-compiles your benches for each target architecture.'],
-          ['03', 'Run', ', deploys, executes warm and cold runs, and samples timing, memory, and energy.'],
-          ['04', 'Report', ', writes JSON and CSV, plus a regression diff against a baseline.'],
-        ].map(([n, b, rest]) => (
-          <div key={n} className="flex items-baseline gap-3.5">
-            <span className="font-mono text-xs text-green">{n}</span>
-            <span className="text-[17px] leading-[1.66] text-ink-soft">
-              <b className="font-semibold text-ink">{b}</b>
-              {rest}
-            </span>
-          </div>
-        ))}
-      </div>
-      <Code className="text-[13px] leading-[1.9]">
-        <div className={C.out}># a report entry</div>
-        <div>{'{ '}<span className={C.cmd}>"device"</span>: <span className={C.flag}>"pixel-8"</span>, <span className={C.cmd}>"bench"</span>: <span className={C.flag}>"prove"</span>,</div>
-        <div>&nbsp;&nbsp;<span className={C.cmd}>"time_ms"</span>: 408, <span className={C.cmd}>"peak_rss_mib"</span>: 118.9,</div>
-        <div>&nbsp;&nbsp;<span className={C.cmd}>"energy_j"</span>: 0.31, <span className={C.cmd}>"runs"</span>: 50 {'}'}</div>
+      <H2 id="system">How the system fits</H2>
+      <Table
+        rows={[
+          ['Author', <>Write public Rust functions and mark them with <Mono>#[benchmark]</Mono>.</>],
+          ['Register', <>The macro uses inventory registration and a fully-qualified name based on <Mono>module_path!()</Mono>.</>],
+          ['Generate', <>The SDK codegen and builders create mobile runners under <Mono>target/mobench/</Mono>.</>],
+          ['Package', <>Android output includes APK artifacts; iOS output includes an xcframework, Xcode runner project, and IPA packaging path.</>],
+          ['Execute', <>Run locally, run on selected BrowserStack devices, or orchestrate a CI run.</>],
+          ['Report', <>Collect per-device outputs and normalized summaries for humans and automation.</>],
+        ]}
+      />
+
+      <H2 id="flow">Artifact flow</H2>
+      <Code className="mb-7">
+        <div>Rust crate + #[benchmark]</div>
+        <div>  -&gt; mobench-sdk registry and timing harness</div>
+        <div>  -&gt; generated Android/iOS runner</div>
+        <div>  -&gt; APK / xcframework / IPA</div>
+        <div>  -&gt; local device or BrowserStack run</div>
+        <div>  -&gt; summary.json / summary.md / results.csv</div>
       </Code>
+
+      <H2 id="ecosystem">Crate ecosystem</H2>
+      <InfoCallout>
+        The older mobench-runner crate has been consolidated into mobench-sdk as its timing module.
+      </InfoCallout>
+      <Table
+        rows={[
+          ['mobench', 'CLI tool for build, run, profile, report, CI, fixtures, BrowserStack, and packaging workflows.'],
+          ['mobench-sdk', 'Core SDK with timing, registry, runner, builders, codegen, FFI helpers, macros, and shared types.'],
+          ['mobench-macros', 'Procedural macro crate for benchmark registration and setup-aware benchmark wrappers.'],
+        ]}
+      />
     </div>
   )
 }
@@ -543,41 +628,55 @@ function InstallPage() {
   return (
     <div>
       <H1>Installation</H1>
-      <Lead>
-        mobench ships as a single CLI binary published to crates.io. Most users install it with Cargo
-        in one command.
-      </Lead>
+      <Lead>Install the CLI and configure the host toolchains for the mobile targets you plan to build.</Lead>
 
-      <H2 id="requirements" tight>Requirements</H2>
+      <H2 id="cli" tight>Install CLI</H2>
+      <Code className="mb-7">
+        <Line cmd="cargo install mobench" />
+      </Code>
+
+      <H2 id="cargo">Cargo setup</H2>
+      <P>Add the SDK and inventory to each crate that contains benchmarks. The crate-type entries are required for mobile FFI outputs.</P>
+      <Code className="mb-7">
+        <div>[dependencies]</div>
+        <div>mobench-sdk = "0.1.41"</div>
+        <div>inventory = "0.3"</div>
+        <div className="mt-3">[lib]</div>
+        <div>crate-type = ["cdylib", "staticlib", "lib"]</div>
+      </Code>
+      <P>If your benchmarks expose custom FFI types, add UniFFI and related build dependencies. For most benchmark-only crates, the SDK built-in types and generated runner are enough.</P>
+      <Code className="mb-7">
+        <div>[dependencies]</div>
+        <div>uniffi = {'{'} version = "0.28", features = ["cli"] {'}'}</div>
+        <div>thiserror = "1.0"</div>
+        <div>serde = {'{'} version = "1.0", features = ["derive"] {'}'}</div>
+        <div className="mt-3">[build-dependencies]</div>
+        <div>uniffi = {'{'} version = "0.28", features = ["build"] {'}'}</div>
+      </Code>
+
+      <H2 id="android">Android setup</H2>
       <ul className="m-0 mb-[22px] list-disc pl-[22px] text-[17.5px] leading-[1.85] text-ink-soft">
-        <li>Rust 1.76 or newer with <Mono>cargo</Mono> on your PATH.</li>
-        <li>For Android targets: Android platform-tools (<Mono>adb</Mono>) on macOS, Linux, or Windows.</li>
-        <li>For iOS targets: macOS with Xcode command-line tools.</li>
+        <li>Install Android NDK.</li>
+        <li>Set <Mono>ANDROID_NDK_HOME</Mono>.</li>
+        <li>Install <Mono>cargo-ndk</Mono> with <Mono>cargo install cargo-ndk</Mono>.</li>
+        <li>Add <Mono>aarch64-linux-android</Mono> with rustup.</li>
+        <li>Add optional ABI targets only when you configure them explicitly.</li>
       </ul>
 
-      <H2 id="install">Install the CLI</H2>
-      <Code className="mb-[18px]">
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>cargo</span> install mobench</div>
-      </Code>
-      <P>Prefer a pinned release? Pass an explicit version:</P>
-      <Code className="mb-7">
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>cargo</span> install mobench <span className={C.flag}>--version</span> 0.3.0</div>
-      </Code>
+      <H2 id="ios">iOS setup</H2>
+      <ul className="m-0 mb-[22px] list-disc pl-[22px] text-[17.5px] leading-[1.85] text-ink-soft">
+        <li>Use macOS with Xcode command-line tools.</li>
+        <li>Install <Mono>uniffi-bindgen</Mono> when custom UniFFI types are needed.</li>
+        <li>Optionally install <Mono>xcodegen</Mono>.</li>
+        <li>Add <Mono>aarch64-apple-ios</Mono>, <Mono>aarch64-apple-ios-sim</Mono>, and <Mono>x86_64-apple-ios</Mono>.</li>
+      </ul>
 
-      <H2 id="verify">Verify the install</H2>
-      <P>Confirm the binary is on your PATH and check connected hardware with the built-in doctor:</P>
+      <H2 id="verify">Verify setup</H2>
       <Code className="mb-7">
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>mobench</span> --version</div>
-        <div className={C.out}>mobench 0.3.0</div>
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>mobench</span> doctor</div>
-        <div className={C.out}>  cargo 1.79 <span className={C.ok}>ok</span> · adb 35.0 <span className={C.ok}>ok</span> · xcode 15.4 <span className={C.ok}>ok</span></div>
+        <Line cmd="cargo mobench doctor" />
+        <Line cmd="cargo mobench list" />
+        <Line cmd="cargo mobench build --target android --dry-run" />
       </Code>
-
-      <WarnCallout>
-        iOS benchmarking requires macOS, Apple's toolchain only runs there. Android works from any
-        host. If you have neither device locally, point mobench at a remote farm (see{' '}
-        <b className="font-semibold">Running on devices</b>).
-      </WarnCallout>
     </div>
   )
 }
@@ -586,100 +685,243 @@ function QuickPage() {
   return (
     <div>
       <H1>Quickstart</H1>
-      <Lead>
-        From a fresh checkout to your first real-device report in about a minute. This assumes you
-        have already installed the CLI.
-      </Lead>
+      <Lead>Initialize configuration, define one benchmark, build mobile artifacts, and run locally or on BrowserStack.</Lead>
 
-      <H2 id="connect" tight>1 · Connect a device</H2>
-      <P>Plug in a phone over USB and enable developer mode, then list what mobench can see:</P>
+      <H2 id="init" tight>Initialize config</H2>
       <Code className="mb-7">
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>mobench</span> devices</div>
-        <div className={C.out}>  pixel-8     android 14  arm64  <span className={C.ok}>ready</span></div>
-        <div className={C.out}>  iphone-15p  ios 17.5    arm64  <span className={C.ok}>ready</span></div>
+        <Line cmd="cargo mobench init --target android --output bench-config.toml" />
       </Code>
 
-      <H2 id="annotate">2 · Mark a benchmark</H2>
-      <P>
-        Annotate any function with <Mono>#[mobench]</Mono>. Existing Criterion benches work unchanged.
-      </P>
-      <Code className="mb-7 text-[13px] leading-[1.85]">
-        <div><span className={C.kw}>use</span> mobench::mobench;</div>
-        <div>&nbsp;</div>
-        <div><span className={C.cmd}>#[mobench]</span></div>
-        <div><span className={C.kw}>fn</span> <span className={C.cmd}>prove</span>(b: &amp;<span className={C.flag}>mut</span> Bencher) {'{'}</div>
-        <div>&nbsp;&nbsp;<span className={C.kw}>let</span> circuit = load_circuit();</div>
-        <div>&nbsp;&nbsp;b.iter(|| prover.prove(&amp;circuit));</div>
+      <H2 id="write">Write a benchmark</H2>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::{'{'}benchmark, black_box{'}'};</div>
+        <div />
+        <div>#[benchmark]</div>
+        <div>pub fn my_expensive_operation() {'{'}</div>
+        <div>  let result = expensive_computation();</div>
+        <div>  black_box(result);</div>
         <div>{'}'}</div>
       </Code>
 
-      <H2 id="run">3 · Run it</H2>
+      <H2 id="build">Build artifacts</H2>
       <Code className="mb-7">
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>mobench</span> run <span className={C.flag}>--bench</span> prove <span className={C.flag}>--device</span> pixel-8</div>
-        <div className={C.out}>  building prove (arm64) … done</div>
-        <div className={C.out}>  deploying to pixel-8 … done</div>
-        <div className={C.out}>  prove  <span className={C.ok}>408 ms</span>  rss 118.9 MiB  energy 0.31 J</div>
-        <div className={C.out}>  report → ./mobench/2026-06-27.json</div>
+        <Line cmd="cargo mobench build --target android" />
+        <Line cmd="cargo mobench build --target ios" />
       </Code>
 
-      <H2 id="read">4 · Read the report</H2>
-      <P>Compare against a saved baseline to see regressions at a glance:</P>
-      <Code>
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>mobench</span> report <span className={C.flag}>--diff</span> baseline.json</div>
-        <div className={C.out}>  prove   408 ms  <span className={C.bad}>+4.2%</span>  vs 391 ms</div>
-        <div className={C.out}>  verify   12 ms  <span className={C.ok}>-1.1%</span>  vs 12 ms</div>
+      <H2 id="local">Run locally</H2>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench run --target android --function my_expensive_operation --local-only" />
+      </Code>
+
+      <H2 id="devices">Run on devices</H2>
+      <Code className="mb-7">
+        <Line cmd='cargo mobench run --target android --function my_expensive_operation --iterations 100 --warmup 10 --devices "Google Pixel 7-13.0" --release' />
       </Code>
     </div>
   )
 }
 
-function WritePage() {
+function ConfigurationPage() {
+  return (
+    <div>
+      <H1>Configuration</H1>
+      <Lead>mobench accepts command-line arguments and TOML configuration for repeatable local and CI runs.</Lead>
+
+      <H2 id="toml" tight>TOML config</H2>
+      <Code className="mb-7">
+        <div>target = "android"</div>
+        <div>function = "my_crate::my_benchmark"</div>
+        <div>iterations = 100</div>
+        <div>warmup = 10</div>
+      </Code>
+      <Table
+        rows={[
+          ['target', <>Mobile target, usually <Mono>android</Mono> or <Mono>ios</Mono>.</>],
+          ['function', 'Benchmark function name, often fully-qualified for unambiguous registry lookup.'],
+          ['iterations', 'Measured iterations collected after warmup.'],
+          ['warmup', 'Warmup iterations used to stabilize caches and runtime state.'],
+        ]}
+      />
+
+      <H2 id="browserstack">BrowserStack block</H2>
+      <Code className="mb-7">
+        <div>[browserstack]</div>
+        <div>app_automate_username = "${'{'}BROWSERSTACK_USERNAME{'}'}"</div>
+        <div>app_automate_access_key = "${'{'}BROWSERSTACK_ACCESS_KEY{'}'}"</div>
+        <div>project = "my-project"</div>
+      </Code>
+
+      <H2 id="devices">Device inputs</H2>
+      <P>
+        Device inputs can come from direct flags such as <Mono>--devices</Mono>, config files, or matrix/profile
+        resolution through the <Mono>devices resolve</Mono> command. The public CLI API models those inputs with
+        <Mono>DeviceSelection</Mono>.
+      </P>
+      <Code className="mb-7">
+        <Line cmd='cargo mobench run --target android --function my_benchmark --devices "Google Pixel 7-13.0"' />
+        <Line cmd="cargo mobench devices resolve" />
+      </Code>
+
+      <H2 id="validation">Validation</H2>
+      <P>Use validation before CI jobs spend time building or uploading mobile artifacts.</P>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench config validate" />
+        <Line cmd="cargo mobench doctor" />
+      </Code>
+    </div>
+  )
+}
+
+function BenchmarkPage() {
   return (
     <div>
       <H1>Writing benchmarks</H1>
-      <Lead>
-        A mobench benchmark is an ordinary Rust function. The attribute macro handles
-        cross-compilation, deployment, and measurement so your code stays focused on the work being
-        timed.
-      </Lead>
+      <Lead>Benchmarks are public Rust functions registered by the <Mono>#[benchmark]</Mono> attribute for mobile execution.</Lead>
 
-      <H2 id="basic" tight>The basic shape</H2>
-      <P>
-        Wrap the work you care about in <Mono>b.iter</Mono>. Setup outside the closure is excluded
-        from timing.
-      </P>
-      <Code className="mb-7 text-[13px] leading-[1.85]">
-        <div><span className={C.cmd}>#[mobench(samples = 50, warmup = 5)]</span></div>
-        <div><span className={C.kw}>fn</span> <span className={C.cmd}>hash</span>(b: &amp;<span className={C.flag}>mut</span> Bencher) {'{'}</div>
-        <div>&nbsp;&nbsp;<span className={C.kw}>let</span> input = random_bytes(<span className={C.num}>1</span> &lt;&lt; <span className={C.num}>20</span>);  <span className={C.out}>// excluded</span></div>
-        <div>&nbsp;&nbsp;b.iter(|| sha256(&amp;input));        <span className={C.out}>// timed</span></div>
+      <H2 id="basic" tight>Basic shape</H2>
+      <P>Simple benchmarks take no parameters, return <Mono>()</Mono>, and should not panic during normal execution.</P>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::{'{'}benchmark, black_box{'}'};</div>
+        <div />
+        <div>#[benchmark]</div>
+        <div>pub fn sum_vector() {'{'}</div>
+        <div>  let data = vec![1, 2, 3, 4, 5];</div>
+        <div>  let sum: i32 = data.iter().sum();</div>
+        <div>  black_box(sum);</div>
         <div>{'}'}</div>
       </Code>
 
-      <H2 id="params">Parameters</H2>
-      <div className="mb-7 overflow-hidden rounded-xl border border-[rgba(20,18,12,0.1)]">
-        <div className="flex bg-[#EDE6D2] px-[18px] py-3 font-mono text-[11.5px] uppercase tracking-[0.04em] text-faint">
-          <span className="w-[130px] flex-none">Key</span>
-          <span className="w-[90px] flex-none">Default</span>
-          <span>Meaning</span>
-        </div>
-        {[
-          ['samples', '50', 'Timed iterations recorded per device.'],
-          ['warmup', '5', 'Untimed runs to settle caches and clocks.'],
-          ['cold', 'false', 'Relaunch the process between samples.'],
-        ].map(([k, d, m]) => (
-          <div key={k} className="flex border-t border-[rgba(20,18,12,0.08)] px-[18px] py-[13px] text-[14.5px] text-ink-soft">
-            <span className="w-[130px] flex-none font-mono text-[13px] text-green">{k}</span>
-            <span className="w-[90px] flex-none font-mono text-[13px]">{d}</span>
-            <span>{m}</span>
-          </div>
-        ))}
-      </div>
+      <H2 id="setup">Setup functions</H2>
+      <P>Use setup when input construction is expensive and should not be included in the measured section.</P>
+      <Code className="mb-7">
+        <div>fn setup_data() -&gt; Vec&lt;u8&gt; {'{'}</div>
+        <div>  vec![0u8; 1_000_000]</div>
+        <div>{'}'}</div>
+        <div />
+        <div>#[benchmark(setup = setup_data)]</div>
+        <div>pub fn hash_benchmark(data: &amp;Vec&lt;u8&gt;) {'{'}</div>
+        <div>  black_box(compute_hash(data));</div>
+        <div>{'}'}</div>
+      </Code>
 
-      <InfoCallout>
-        Use <span className="font-mono text-[13px]">cold = true</span> for cryptographic setup or
-        model-loading work, where the first run is what your users feel.
-      </InfoCallout>
+      <H2 id="macro">Macro behavior</H2>
+      <Table
+        rows={[
+          ['Preserves function', 'The original Rust function remains callable as normal.'],
+          ['Registers inventory', 'A static registration is submitted so SDK discovery can find the benchmark at runtime.'],
+          ['Names benchmark', <>The macro captures a fully-qualified name with <Mono>module_path!()</Mono>.</>],
+          ['Handles setup', 'Setup/teardown-style wrappers keep expensive setup outside the measured section when configured.'],
+        ]}
+      />
+
+      <H2 id="discovery">Discovery</H2>
+      <P>Use registry helpers when functions are not showing up.</P>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::{'{'}discover_benchmarks, list_benchmark_names{'}'};</div>
+        <div />
+        <div>for name in list_benchmark_names() {'{'} println!("{'{}'}", name); {'}'}</div>
+        <div>for bench in discover_benchmarks() {'{'} println!("{'{}'}", bench.name); {'}'}</div>
+      </Code>
+
+      <H2 id="best">Best practices</H2>
+      <ul className="m-0 mb-[22px] list-disc pl-[22px] text-[17.5px] leading-[1.85] text-ink-soft">
+        <li>Wrap computed results with <Mono>black_box</Mono> to prevent compiler elimination.</li>
+        <li>Keep measured code deterministic and avoid file I/O in the hot path.</li>
+        <li>Use setup functions for expensive input creation.</li>
+        <li>Start with 5-10 warmup iterations and 50-100 measured iterations.</li>
+        <li>Expect more variance on mobile devices than desktop machines.</li>
+      </ul>
+    </div>
+  )
+}
+
+function SdkPage() {
+  return (
+    <div>
+      <H1>SDK reference</H1>
+      <Lead>mobench-sdk provides the runtime, builders, generated mobile runners, and shared types used by the CLI.</Lead>
+
+      <H2 id="architecture" tight>Architecture</H2>
+      <Table
+        rows={[
+          ['timing', 'Core timing infrastructure and lightweight mobile benchmark harness.'],
+          ['registry', 'Runtime discovery for #[benchmark] functions, behind registry or full features.'],
+          ['runner', 'Benchmark execution engine with BenchmarkBuilder, BenchSpec, and run_benchmark.'],
+          ['builders', 'Android and iOS build automation. Enables codegen.'],
+          ['codegen', 'Project and mobile app template generation.'],
+          ['types', 'Common config, report, sample, build, target, FFI, and error types.'],
+          ['ffi', 'Unified UniFFI integration helpers.'],
+          ['native_c_abi', 'Native JSON C ABI for benchmark runners.'],
+        ]}
+      />
+
+      <H2 id="features">Feature flags</H2>
+      <Table
+        rows={[
+          ['full', 'Default. Full SDK with build automation, templates, registry, and normal integration surface.'],
+          ['registry', 'Benchmark macro, inventory registry, and runtime execution without build tooling.'],
+          ['builders', 'Android/iOS build automation; enables codegen.'],
+          ['codegen', 'Project and mobile app template generation.'],
+          ['runner-only', 'Minimal timing-only mode for mobile binaries where size matters.'],
+        ]}
+      />
+      <Code className="mb-7">
+        <div>[dependencies]</div>
+        <div>mobench-sdk = {'{'} version = "0.1.41", default-features = false, features = ["runner-only"] {'}'}</div>
+      </Code>
+
+      <H2 id="runner">Runner APIs</H2>
+      <P>Use <Mono>BenchmarkBuilder</Mono> for fluent execution or <Mono>BenchSpec</Mono> with <Mono>run_benchmark</Mono> for explicit specs.</P>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::BenchmarkBuilder;</div>
+        <div />
+        <div>let report = BenchmarkBuilder::new("my_benchmark")</div>
+        <div>  .iterations(100)</div>
+        <div>  .warmup(10)</div>
+        <div>  .run()?;</div>
+        <div>println!("Mean: {'{}'} ns", report.mean_ns());</div>
+      </Code>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::{'{'}BenchSpec, run_benchmark{'}'};</div>
+        <div />
+        <div>let spec = BenchSpec::new("my_benchmark", 50, 5)?;</div>
+        <div>let report = run_benchmark(spec)?;</div>
+        <div>println!("Collected {'{}'} samples", report.samples.len());</div>
+      </Code>
+
+      <H2 id="builders">Builders</H2>
+      <P>Use builders when you want to drive mobile app creation from Rust instead of shelling out through the CLI.</P>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::builders::AndroidBuilder;</div>
+        <div><span className={C.kw}>use</span> mobench_sdk::{'{'}BuildConfig, BuildProfile, Target{'}'};</div>
+        <div />
+        <div>let builder = AndroidBuilder::new(".", "my-bench-crate")</div>
+        <div>  .verbose(true)</div>
+        <div>  .output_dir("target/mobench");</div>
+        <div />
+        <div>let config = BuildConfig {'{'} target: Target::Android, profile: BuildProfile::Release, incremental: true {'}'};</div>
+        <div>let result = builder.build(&amp;config)?;</div>
+      </Code>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::builders::{'{'}IosBuilder, SigningMethod{'}'};</div>
+        <div />
+        <div>let builder = IosBuilder::new(".", "my-bench-crate").verbose(true);</div>
+        <div>let result = builder.build(&amp;config)?;</div>
+        <div>let ipa = builder.package_ipa("BenchRunner", SigningMethod::AdHoc)?;</div>
+      </Code>
+
+      <H2 id="exports">Re-exports</H2>
+      <P>The SDK re-exports the common surface most users need:</P>
+      <Table
+        rows={[
+          ['Macros', <><Mono>benchmark</Mono>, <Mono>debug_benchmarks!</Mono>, <Mono>export_native_c_abi!</Mono></>],
+          ['Runner', <><Mono>BenchmarkBuilder</Mono>, <Mono>BenchSpec</Mono>, <Mono>run_benchmark</Mono></>],
+          ['Discovery', <><Mono>discover_benchmarks</Mono>, <Mono>find_benchmark</Mono>, <Mono>list_benchmark_names</Mono></>],
+          ['Types', <><Mono>BenchError</Mono>, <Mono>BenchSample</Mono>, <Mono>RunnerReport</Mono>, <Mono>BuildConfig</Mono>, <Mono>BuildProfile</Mono>, <Mono>BuildResult</Mono>, <Mono>Target</Mono></>],
+          ['Timing', <><Mono>BenchSummary</Mono>, <Mono>SemanticPhase</Mono>, <Mono>TimingError</Mono>, <Mono>profile_phase</Mono>, <Mono>run_closure</Mono></>],
+        ]}
+      />
     </div>
   )
 }
@@ -688,111 +930,193 @@ function CliPage() {
   return (
     <div>
       <H1>CLI reference</H1>
-      <Lead>
-        Every mobench subcommand at a glance. Run <Mono>mobench help &lt;cmd&gt;</Mono> for full
-        flags.
-      </Lead>
+      <Lead>The mobench CLI is the command surface for project setup, builds, device runs, CI, fixtures, reports, and packaging.</Lead>
 
-      <H2 id="run" tight>mobench run</H2>
-      <P>Build, deploy, and execute benchmarks on one or more devices.</P>
-      <div className="mb-8 overflow-hidden rounded-xl border border-[rgba(20,18,12,0.1)]">
-        <div className="flex bg-leaf px-[18px] py-3 font-mono text-[13px] text-code">
-          <span className={C.dollar}>$&nbsp;</span>mobench run <span className={C.flag}>&nbsp;[flags]</span>
-        </div>
-        {[
-          ['--bench <name>', 'Run a single named benchmark.'],
-          ['--device <id>', 'Target one device; repeatable.'],
-          ['--out <path>', 'Report destination (default ./mobench).'],
-        ].map(([flag, desc]) => (
-          <div key={flag} className="flex border-t border-[rgba(20,18,12,0.08)] px-[18px] py-[13px] text-[14.5px] text-ink-soft">
-            <span className="w-[150px] flex-none font-mono text-[13px] text-green">{flag}</span>
-            <span>{desc}</span>
-          </div>
-        ))}
-      </div>
+      <H2 id="commands" tight>Commands</H2>
+      <Table
+        rows={[
+          ['init', 'Initialize a benchmark project.'],
+          ['build', 'Build mobile artifacts such as Android APKs and iOS xcframework outputs.'],
+          ['run', 'Execute benchmarks locally or on selected devices.'],
+          ['ci run', 'Run standardized CI orchestration and write summary.json, summary.md, and results.csv.'],
+          ['doctor', 'Validate local and CI prerequisites.'],
+          ['config validate', 'Validate run configuration and matrix contracts.'],
+          ['devices resolve', 'Resolve deterministic device sets from matrix or profile inputs.'],
+          ['fixture ...', 'Manage fixture init, build, verify, and cache-key lifecycle helpers.'],
+          ['report ...', 'Render markdown and publish sticky PR comments.'],
+          ['list', 'List discovered benchmark functions.'],
+          ['fetch', 'Retrieve BrowserStack results.'],
+          ['package-ipa', 'Package an iOS app as IPA.'],
+          ['package-xcuitest', 'Package an XCUITest runner.'],
+        ]}
+      />
 
-      <H2 id="cmds">Other commands</H2>
-      <div className="flex flex-col overflow-hidden rounded-xl border border-[rgba(20,18,12,0.1)]">
-        {[
-          ['devices', 'List discoverable devices and their status.'],
-          ['report', 'Render or diff an existing report.'],
-          ['doctor', 'Check the host toolchain and connections.'],
-          ['farm', 'Configure and authenticate against a device farm.'],
-        ].map(([cmd, desc], i) => (
-          <div
-            key={cmd}
-            className={cn(
-              'flex px-[18px] py-[15px] text-[15px] text-ink-soft',
-              i > 0 && 'border-t border-[rgba(20,18,12,0.08)]',
-            )}
-          >
-            <span className="w-[150px] flex-none font-mono text-[13.5px] text-green">{cmd}</span>
-            <span>{desc}</span>
-          </div>
-        ))}
-      </div>
+      <H2 id="run">Run command</H2>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench run --target android --function my_benchmark --local-only" />
+        <Line cmd='cargo mobench run --target android --function my_benchmark --iterations 100 --warmup 10 --devices "Google Pixel 7-13.0" --release' />
+      </Code>
+
+      <H2 id="build">Build command</H2>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench build --target android" />
+        <Line cmd="cargo mobench build --target ios" />
+        <Line cmd="cargo mobench build --target android --output-dir target/mobench" />
+      </Code>
+
+      <H2 id="fixtures">Fixture helpers</H2>
+      <P>Fixture helpers are intended for repeatable CI/devex flows: initialize a fixture, build it, verify it, and derive cache keys.</P>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench fixture init" />
+        <Line cmd="cargo mobench fixture build" />
+        <Line cmd="cargo mobench fixture verify" />
+        <Line cmd="cargo mobench fixture cache-key" />
+      </Code>
+
+      <H2 id="global">Global flags</H2>
+      <P>Use <Mono>--dry-run</Mono> to preview work without changing artifacts, and <Mono>--verbose</Mono> or <Mono>-v</Mono> to print detailed command output.</P>
     </div>
   )
 }
 
-function FfiPage() {
+function BrowserStackPage() {
   return (
     <div>
-      <H1>FFI bindings</H1>
-      <Lead>
-        mobench's measurement engine lives in <span className="font-mono text-[15px]">mobench-sdk</span>,
-        which exposes a stable C ABI. You can drive the same engine from Swift, Kotlin, or any host
-        language using whichever binding generator your team prefers: UniFFI, Bolt FFI, or
-        hand-written native FFI.
-      </Lead>
+      <H1>BrowserStack</H1>
+      <Lead>mobench integrates with BrowserStack App Automate for Android benchmark runs on real devices.</Lead>
 
-      <H2 id="whyffi" tight>Why bindings</H2>
-      <P>
-        On-device benchmarks often need to call into your app's own code, which may be written in
-        Swift or Kotlin rather than Rust. Bindings bridge the SDK to that code without reimplementing
-        the harness, and all three options compile against the same stable ABI, so you can switch
-        generators without touching the engine.
-      </P>
-
-      <H2 id="uniffi">UniFFI</H2>
-      <P>
-        The recommended path for most mobile teams. Enable the <Mono>uniffi</Mono> feature and
-        generate idiomatic Swift and Kotlin wrappers from the SDK's interface definition.
-      </P>
-      <Code className="mb-7 text-[13px]">
-        <div className={C.out}># Cargo.toml</div>
-        <div>mobench-sdk = {'{'} version = <span className={C.str}>"0.3"</span>, features = [<span className={C.str}>"uniffi"</span>] {'}'}</div>
-        <div className={C.out}>&nbsp;</div>
-        <div><span className={C.dollar}>$</span> <span className={C.cmd}>uniffi-bindgen</span> generate src/mobench.udl <span className={C.flag}>--language</span> swift</div>
+      <H2 id="credentials" tight>Credentials</H2>
+      <P>Set credentials through environment variables or the BrowserStack config block.</P>
+      <Code className="mb-7">
+        <Line cmd='export BROWSERSTACK_USERNAME="your_username"' />
+        <Line cmd='export BROWSERSTACK_ACCESS_KEY="your_access_key"' />
+      </Code>
+      <Code className="mb-7">
+        <div>[browserstack]</div>
+        <div>app_automate_username = "${'{'}BROWSERSTACK_USERNAME{'}'}"</div>
+        <div>app_automate_access_key = "${'{'}BROWSERSTACK_ACCESS_KEY{'}'}"</div>
+        <div>project = "my-project"</div>
       </Code>
 
-      <H2 id="bolt">Bolt FFI</H2>
-      <P>
-        Already standardized on Bolt? mobench-sdk ships a Bolt-compatible surface behind the{' '}
-        <Mono>bolt-ffi</Mono> feature, so it slots into your existing binding workflow.
-      </P>
-      <Code className="mb-7 text-[13px]">
-        <div className={C.out}># Cargo.toml</div>
-        <div>mobench-sdk = {'{'} version = <span className={C.str}>"0.3"</span>, features = [<span className={C.str}>"bolt-ffi"</span>] {'}'}</div>
+      <H2 id="names">Device names</H2>
+      <P>Pass BrowserStack device names directly for ad hoc runs, or resolve deterministic sets through matrix/profile tooling.</P>
+      <Code className="mb-7">
+        <Line cmd='cargo mobench run --target android --function my_benchmark --devices "Google Pixel 7-13.0" --release' />
+        <Line cmd="cargo mobench devices resolve" />
       </Code>
 
-      <H2 id="nativeffi">Native FFI</H2>
-      <P>
-        Need full control? Link the generated C header directly and hand-write your own native FFI
-        against the stable ABI.
-      </P>
-      <Code className="mb-7 text-[13px] leading-[1.85]">
-        <div><span className={C.kw}>#include</span> <span className={C.str}>"mobench_sdk.h"</span></div>
-        <div>&nbsp;</div>
-        <div>MobenchConfig cfg = mobench_config_default();</div>
-        <div>mobench_run(&amp;cfg);  <span className={C.out}>// same engine, your ABI</span></div>
+      <H2 id="release">Release uploads</H2>
+      <P>Use <Mono>--release</Mono> for smaller APK uploads when sending Android builds to BrowserStack.</P>
+
+      <H2 id="fetch">Fetching results</H2>
+      <P>Use <Mono>fetch</Mono> when you need to retrieve BrowserStack results after a run or from a follow-up automation.</P>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench fetch" />
+      </Code>
+    </div>
+  )
+}
+
+function CiPage() {
+  return (
+    <div>
+      <H1>CI workflows</H1>
+      <Lead>CI mode standardizes output files and report generation so benchmark results can be attached to pull requests.</Lead>
+
+      <H2 id="command" tight>CI command</H2>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench ci run" />
+        <div className={C.out}>summary.json</div>
+        <div className={C.out}>summary.md</div>
+        <div className={C.out}>results.csv</div>
       </Code>
 
-      <InfoCallout>
-        All three generators target the identical C ABI exported by{' '}
-        <b className="font-semibold">mobench-sdk</b>. Pick one per platform, or mix them across an
-        organization, without forking the engine.
-      </InfoCallout>
+      <H2 id="matrix">Matrix validation</H2>
+      <P>Validate run config and matrix contracts before scheduling expensive build or device work.</P>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench config validate" />
+      </Code>
+
+      <H2 id="resolution">Device resolution</H2>
+      <P>Resolve devices from profiles or matrices into deterministic sets so CI runs are reproducible.</P>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench devices resolve" />
+      </Code>
+
+      <H2 id="sticky">Sticky reports</H2>
+      <P>The report command renders markdown and can publish sticky pull-request comments for benchmark summaries.</P>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench report" />
+      </Code>
+    </div>
+  )
+}
+
+function ProfilingPage() {
+  return (
+    <div>
+      <H1>Profiling</H1>
+      <Lead>mobench can plan and execute supported local native profiling captures alongside benchmark runs.</Lead>
+
+      <H2 id="what" tight>What profiling does</H2>
+      <P>Profiling is separate from ordinary benchmark reporting. It is used when you need local native capture data to understand where time is going.</P>
+
+      <H2 id="local">Local native capture</H2>
+      <Code className="mb-7">
+        <Line cmd="cargo mobench profile run --target android --provider local --backend android-native --function my_expensive_operation" />
+      </Code>
+
+      <H2 id="phases">Timeline phases</H2>
+      <P>The SDK exposes timing helpers such as <Mono>profile_phase</Mono> and semantic phase types for code that needs structured timing spans.</P>
+      <Code className="mb-7">
+        <div><span className={C.kw}>use</span> mobench_sdk::{'{'}profile_phase, SemanticPhase{'}'};</div>
+      </Code>
+    </div>
+  )
+}
+
+function ReportsPage() {
+  return (
+    <div>
+      <H1>Outputs & reports</H1>
+      <Lead>mobench keeps generated files in Rust-friendly output directories and normalizes reports for automation.</Lead>
+
+      <H2 id="directory" tight>Output directory</H2>
+      <Code className="mb-7">
+        <div>target/mobench/</div>
+        <div>  android/</div>
+        <div>    app/src/main/jniLibs/</div>
+        <div>    app/build/outputs/apk/</div>
+        <div>  ios/</div>
+        <div>    sample_fns.xcframework/</div>
+        <div>    BenchRunner/</div>
+        <div>    BenchRunner.ipa</div>
+      </Code>
+      <P>Use <Mono>--output-dir</Mono> when you need a different artifact root.</P>
+
+      <H2 id="run">Run outputs</H2>
+      <Table
+        rows={[
+          ['summary.json', 'Machine-readable run summary for automation.'],
+          ['summary.md', 'Human-readable markdown summary for pull requests or logs.'],
+          ['results.csv', 'Tabular benchmark samples/results for analysis.'],
+        ]}
+      />
+
+      <H2 id="types">Programmatic types</H2>
+      <Table
+        rows={[
+          ['Report', 'Standardized output file locations produced by a run.'],
+          ['RunRequest', 'Programmatic request payload for running a mobench benchmark flow.'],
+          ['RunResult', 'Result returned by a programmatic mobench run request.'],
+          ['ExtractedBenchmarkResult', 'Unified result extracted from per-device benchmark outputs.'],
+          ['DeviceSelection', 'Device input sources used by RunRequest.'],
+          ['MobileTarget', 'Mobile platform target for build/run operations.'],
+        ]}
+      />
+
+      <H2 id="summary">Summary extraction</H2>
+      <P>The CLI exposes helpers such as <Mono>extract_benchmark_summary</Mono> and <Mono>run_request</Mono> for normalized programmatic workflows.</P>
     </div>
   )
 }
@@ -800,113 +1124,78 @@ function FfiPage() {
 function PackagesPage() {
   return (
     <div>
-      <H1>Packages &amp; API</H1>
-      <p className="m-0 mb-7 text-[21px] leading-[1.6] text-muted">
-        mobench is published to crates.io as three crates. Most users depend on only one. Full
-        rustdoc for every public item is hosted on docs.rs.
-      </p>
+      <H1>Packages & API</H1>
+      <Lead>The site is a practical guide. Exact structs, methods, feature gates, and item-level docs live on docs.rs.</Lead>
 
-      <a
-        href={DOCSRS.mobench}
-        target="_blank"
-        rel="noreferrer"
-        className="mb-10 inline-flex items-center gap-[9px] rounded-[10px] bg-green px-5 py-3 text-sm font-medium text-white no-underline"
-      >
-        View the full API on docs.rs <span className="text-base">&#8599;</span>
-      </a>
+      <H2 id="mobench" tight>mobench</H2>
+      <P>The CLI crate for build, run, profile, report, BrowserStack, config validation, fixtures, packaging, and programmatic run request helpers.</P>
+      <LinkCard title="mobench on docs.rs" desc="CLI overview, commands, modules, structs, enums, and functions." href={DOCSRS.mobench} />
 
-      <H2 id="crates" tight>The three crates</H2>
-      <div className="mb-6 overflow-hidden rounded-xl border border-[rgba(20,18,12,0.1)]">
-        {[
-          ['mobench', 'The CLI and run orchestration. The binary you install.'],
-          ['mobench-sdk', 'The measurement engine and FFI surface (UniFFI / Bolt / native).'],
-          ['mobench-macros', null],
-        ].map(([name, desc], i) => (
-          <div
-            key={name as string}
-            className={cn(
-              'flex px-[18px] py-3.5 text-[14.5px] text-ink-soft',
-              i < 2 && 'border-b border-[rgba(20,18,12,0.08)]',
-            )}
-          >
-            <span className="w-[170px] flex-none font-mono text-[13.5px] text-green">{name}</span>
-            <span>
-              {desc ?? (
-                <>
-                  The <span className="font-mono text-[13px]">#[mobench]</span> attribute macro.
-                </>
-              )}
-            </span>
-          </div>
-        ))}
-      </div>
+      <H2 id="sdk">mobench-sdk</H2>
+      <P>The runtime crate with timing, registry, runner, builders, codegen, FFI helpers, common types, macros, and re-exports.</P>
+      <LinkCard title="mobench-sdk on docs.rs" desc="SDK architecture, feature flags, builders, runner APIs, modules, macros, and types." href={DOCSRS.sdk} />
 
-      <h2 id="p-mobench" className="mb-4 mt-[52px] text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        mobench
-      </h2>
-      <P>
-        The user-facing binary crate. It implements device discovery, cross-compilation, deployment,
-        the run loop, and report writing, and exposes the <Mono>mobench</Mono> command described in
-        the CLI reference. Depend on it only if you are embedding the orchestrator.
-      </P>
-      <DocsLink href={DOCSRS.mobench}>docs.rs/mobench</DocsLink>
+      <H2 id="macros">mobench-macros</H2>
+      <P>The procedural macro crate for <Mono>#[benchmark]</Mono>. Most users import the macro from <Mono>mobench_sdk</Mono>.</P>
+      <LinkCard title="mobench-macros on docs.rs" desc="Attribute macro usage, setup support, registration behavior, and requirements." href={DOCSRS.macros} />
 
-      <h2 id="p-sdk" className="mb-4 mt-[52px] text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        mobench-sdk
-      </h2>
-      <P>
-        The portable measurement engine: samplers for wall-clock time, peak resident memory, and
-        energy, plus the stable C ABI consumed by the bindings. This is what you link when calling
-        mobench from Swift, Kotlin, or another language. See{' '}
-        <b className="font-semibold">FFI bindings</b> for the integration paths.
-      </P>
-      <DocsLink href={DOCSRS.sdk}>docs.rs/mobench-sdk</DocsLink>
-
-      <h2 id="p-macros" className="mb-4 mt-[52px] text-[26px] font-semibold tracking-[-0.03em] [scroll-margin-top:90px]">
-        mobench-macros
-      </h2>
-      <P>
-        The procedural macro crate behind the <Mono>#[mobench]</Mono> attribute. It expands annotated
-        functions into registered benchmarks the engine can discover and run. You rarely depend on it
-        directly; it is re-exported by the SDK.
-      </P>
-      <DocsLink href={DOCSRS.macros}>docs.rs/mobench-macros</DocsLink>
-
-      <H2 id="docsrs">Full API on docs.rs</H2>
-      <P>
-        Every public type, trait, and function is documented on docs.rs and rebuilt on each release.
-        Use it as the authoritative reference for signatures and feature flags.
-      </P>
-      <div className="flex flex-wrap gap-3">
-        {[
-          ['mobench', DOCSRS.mobench],
-          ['mobench-sdk', DOCSRS.sdk],
-          ['mobench-macros', DOCSRS.macros],
-        ].map(([label, href]) => (
-          <a
-            key={label}
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-[10px] border border-[rgba(20,18,12,0.14)] px-4 py-[11px] font-mono text-[13px] text-ink no-underline"
-          >
-            {label} &#8599;
-          </a>
-        ))}
-      </div>
+      <H2 id="docsrs">docs.rs</H2>
+      <InfoCallout>
+        When this site and docs.rs disagree, prefer docs.rs for exact generated API details and prefer this site for workflow-level guidance.
+      </InfoCallout>
     </div>
   )
 }
 
-function DocsLink({ href, children }: { href: string; children: ReactNode }) {
+function TroubleshootingPage() {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-[7px] text-sm font-medium text-green no-underline"
-    >
-      {children} <span>&#8599;</span>
-    </a>
+    <div>
+      <H1>Troubleshooting</H1>
+      <Lead>Most failures fall into four buckets: discovery, build toolchains, BrowserStack setup, or noisy benchmark design.</Lead>
+
+      <H2 id="missing" tight>Benchmarks missing</H2>
+      <ul className="m-0 mb-[22px] list-disc pl-[22px] text-[17.5px] leading-[1.85] text-ink-soft">
+        <li>Ensure the function is annotated with <Mono>#[benchmark]</Mono>.</li>
+        <li>Ensure the function is public.</li>
+        <li>Simple benchmarks must take no parameters and return <Mono>()</Mono>.</li>
+        <li>Setup benchmarks must take exactly one reference to the setup value and return <Mono>()</Mono>.</li>
+        <li>Use <Mono>debug_benchmarks!</Mono>, <Mono>list_benchmark_names</Mono>, or <Mono>discover_benchmarks</Mono> to inspect registration.</li>
+      </ul>
+
+      <H2 id="build">Build failures</H2>
+      <Table
+        rows={[
+          ['Android NDK', <>Check <Mono>ANDROID_NDK_HOME</Mono> and <Mono>cargo-ndk</Mono>.</>],
+          ['Rust targets', 'Add the required Android or iOS targets with rustup.'],
+          ['Crate type', <>Ensure <Mono>crate-type = ["cdylib", "staticlib", "lib"]</Mono> is present.</>],
+          ['iOS host', 'Use macOS with Xcode command-line tools for iOS builds.'],
+        ]}
+      />
+
+      <H2 id="browserstack">BrowserStack failures</H2>
+      <P>Check credentials, device names, project configuration, and whether you used <Mono>--release</Mono> for smaller Android uploads.</P>
+      <Code className="mb-7">
+        <Line cmd='export BROWSERSTACK_USERNAME="your_username"' />
+        <Line cmd='export BROWSERSTACK_ACCESS_KEY="your_access_key"' />
+        <Line cmd="cargo mobench doctor" />
+      </Code>
+
+      <H2 id="noise">Noisy results</H2>
+      <ul className="m-0 mb-[22px] list-disc pl-[22px] text-[17.5px] leading-[1.85] text-ink-soft">
+        <li>Increase measured iterations toward 50-100.</li>
+        <li>Use 5-10 warmup iterations.</li>
+        <li>Remove file I/O, network access, random sleeps, and other side effects from measured code.</li>
+        <li>Use setup functions for data construction.</li>
+        <li>Expect lower-end phones to show higher variance because of thermal and scheduler behavior.</li>
+      </ul>
+    </div>
+  )
+}
+
+function Line({ cmd }: { cmd: string }) {
+  return (
+    <div>
+      <span className={C.dollar}>$</span> <span className={C.cmd}>{cmd}</span>
+    </div>
   )
 }
