@@ -7,6 +7,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script>
+      ;(() => {
+        try {
+          const stored = window.localStorage.getItem('mobench-theme')
+          const theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+
+          document.documentElement.dataset.theme = theme
+          document.documentElement.style.colorScheme = theme
+        } catch {
+          document.documentElement.dataset.theme = 'light'
+        }
+      })()
+    </script>
     <title>mobench - Rust mobile benchmarking CLI and SDK</title>
     <meta name="description" content="mobench builds, runs, reports, and profiles Rust benchmarks on mobile platforms with a CLI, SDK runtime, and #[benchmark] macro ecosystem." />
   </head>

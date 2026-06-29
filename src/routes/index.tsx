@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { SyntaxHighlightedCode } from '@/components/code-highlight'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Docs } from './docs'
 import {
   Accordion,
@@ -29,6 +30,9 @@ const DOCSRS = {
 }
 
 const DOCS_URL = 'https://docs.mobench.org'
+const WORLD_APP_URL = 'http://world.org/world-app'
+const WORLD_ID_URL = 'https://docs.world.org/world-id'
+const PROVEKIT_URL = 'https://provekit.org/'
 
 const FAQS = [
   {
@@ -154,12 +158,15 @@ function Landing() {
 
   return (
     <div className="overflow-hidden bg-cream text-ink">
-      <header className="sticky top-0 z-50 border-b border-[rgba(20,18,12,0.09)] bg-[rgba(244,239,221,0.78)] backdrop-blur-[14px]">
+      <header className="sticky top-0 z-50 border-b border-[rgba(20,18,12,0.09)] bg-[var(--mb-header-bg)] backdrop-blur-[14px]">
         <div className="mx-auto flex h-[60px] max-w-[1280px] items-center justify-between gap-4 px-5 sm:h-[68px] sm:px-7 lg:px-10">
           <a href="#top" className="no-underline">
             <Wordmark tag="0.1.41" />
           </a>
           <nav className="hidden items-center gap-[30px] text-sm text-muted lg:flex">
+            <a href="#why" className="no-underline text-inherit hover:text-ink">
+              Why
+            </a>
             <a href="#features" className="no-underline text-inherit hover:text-ink">
               Features
             </a>
@@ -175,10 +182,11 @@ function Landing() {
             <a href={DOCS_URL} className="no-underline text-inherit hover:text-ink">
               Docs
             </a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <a
-              href={GITHUB_URL}
+        </nav>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <a
+            href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
               className="hidden items-center gap-2 rounded-lg border border-[rgba(20,18,12,0.16)] px-[13px] py-2 text-[13px] text-ink no-underline sm:flex hover:border-green/50"
@@ -259,6 +267,43 @@ function Landing() {
             <span>Xcode</span>
             <span>BrowserStack</span>
             <span>JSON / CSV / Markdown</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="why" className="border-b border-[rgba(20,18,12,0.08)] bg-cream">
+        <div className={`${SECTION} grid gap-9 py-16 md:grid-cols-[0.85fr_1.15fr] md:py-[96px]`}>
+          <div>
+            <div className={EYEBROW}>Why mobench exists</div>
+            <h2 className={`${H2} max-w-[560px]`}>
+              Real mobile Rust performance has to represent real users.
+            </h2>
+          </div>
+          <div className="space-y-6 text-[17px] leading-[1.62] text-muted">
+            <p className="m-0">
+              mobench was built from an internal need to benchmark intense Rust workloads in mobile environments that look like the real device mix of{' '}
+              <a href={WORLD_APP_URL} target="_blank" rel="noreferrer" className="font-medium text-green underline decoration-green/25 underline-offset-4 hover:decoration-green/60">
+                World App
+              </a>{' '}
+              users, not only the newest flagship phones.
+            </p>
+            <p className="m-0">
+              The target matrix includes flagship devices, medium-tier devices, low-end devices, and even 32-bit devices from 10 years ago, so teams can build confidence across the 95%-99% coverage band that matters for{' '}
+              <a href={PROVEKIT_URL} target="_blank" rel="noreferrer" className="font-medium text-green underline decoration-green/25 underline-offset-4 hover:decoration-green/60">
+                ProveKit
+              </a>
+              , the cryptography library powering{' '}
+              <a href={WORLD_ID_URL} target="_blank" rel="noreferrer" className="font-medium text-green underline decoration-green/25 underline-offset-4 hover:decoration-green/60">
+                World ID
+              </a>
+              .
+            </p>
+            <div className="grid gap-3 pt-2 font-mono text-[12px] uppercase tracking-[0.08em] text-ink sm:grid-cols-4">
+              <span className="border-t border-[rgba(20,18,12,0.14)] pt-3">Flagship</span>
+              <span className="border-t border-[rgba(20,18,12,0.14)] pt-3">Medium tier</span>
+              <span className="border-t border-[rgba(20,18,12,0.14)] pt-3">Low end</span>
+              <span className="border-t border-[rgba(20,18,12,0.14)] pt-3">Legacy 32-bit</span>
+            </div>
           </div>
         </div>
       </section>
@@ -472,14 +517,14 @@ function Landing() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-green text-white">
-        <div className="absolute -right-[120px] -top-[180px] h-[540px] w-[540px] rounded-full border border-white/20" />
-        <div className="absolute -bottom-[220px] -left-[120px] h-[480px] w-[480px] rounded-full border border-white/10" />
+      <section className="relative overflow-hidden bg-green text-cream">
+        <div className="absolute -right-[120px] -top-[180px] h-[540px] w-[540px] rounded-full border border-cream/20" />
+        <div className="absolute -bottom-[220px] -left-[120px] h-[480px] w-[480px] rounded-full border border-cream/10" />
         <div className="relative mx-auto max-w-[1280px] px-5 py-16 text-center sm:px-7 md:py-[104px] lg:px-10">
           <h2 className="mx-auto mb-[22px] max-w-[760px] text-[clamp(34px,4.4vw,58px)] font-semibold leading-[1.02] tracking-[-0.045em]">
             Ship Rust performance with mobile evidence.
           </h2>
-          <p className="mx-auto mb-9 max-w-[560px] text-[18px] leading-[1.5] text-white/80">
+          <p className="mx-auto mb-9 max-w-[560px] text-[18px] leading-[1.5] text-cream/80">
             Install the CLI, add the SDK, and run your first benchmark through the same build and reporting
             pipeline used by the full mobench stack.
           </p>
@@ -494,7 +539,7 @@ function Landing() {
             </a>
             <a
               href={DOCS_URL}
-              className="rounded-[10px] border border-white/30 bg-white/10 px-6 py-3.5 text-[15px] font-medium text-white no-underline"
+              className="rounded-[10px] border border-cream/30 bg-white/10 px-6 py-3.5 text-[15px] font-medium text-cream no-underline"
             >
               Read docs -&gt;
             </a>
