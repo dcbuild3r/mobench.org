@@ -53,6 +53,7 @@ function docsPageForPath(pathname: string): DocsPageOg | null {
 }
 
 function ogForPath(pathname: string): OgTarget {
+  const isDocsSubdomain = typeof window !== 'undefined' && window.location.hostname === 'docs.mobench.org'
   const docsPage = docsPageForPath(pathname)
 
   if (docsPage) {
@@ -65,11 +66,11 @@ function ogForPath(pathname: string): OgTarget {
     }
   }
 
-  if (pathname === '/docs' || pathname === '/docs/') {
+  if (pathname === '/docs' || pathname === '/docs/' || (isDocsSubdomain && pathname === '/')) {
     return {
       title: DOCS_TITLE,
       description: ogPages.docsRoot.description,
-      url: absoluteUrl(ogPages.site.docsUrl, '/docs'),
+      url: absoluteUrl(ogPages.site.docsUrl, isDocsSubdomain ? '/' : '/docs'),
       image: absoluteUrl(ogPages.site.docsUrl, ogPages.docsRoot.image),
     }
   }
